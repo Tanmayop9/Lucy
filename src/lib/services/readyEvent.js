@@ -153,7 +153,28 @@ export const readyEvent = async (client) => {
         client.log('Webhooks initialized successfully.', 'info');
     }
 
-    // Event & Command Loaders
+    // Giveaway: announce winners when a giveaway ends
+    client.giveaways.on("giveawayEnded", async (giveaway, winners) => {
+        const channel = await client.channels.fetch(giveaway.channelId).catch(() => null);
+        if (!channel) return;
+        const winnerMentions = winners.map((w) => `${w}`).join(", ");
+        await channel
+            .send({
+                content: winnerMentions || "No valid participants",
+                embeds: [
+                    client
+                        .embed("#5865F2")
+                        .title("🎉 Giveaway Ended")
+                        .desc(
+                            `**Prize:** ${giveaway.prize}\n` +
+                                `**Winner(s):** ${winnerMentions || "No valid participants"}\n` +
+                                `**Hosted by:** ${giveaway.hostedBy || client.user.toString()}`,
+                        ),
+                ],
+            })
+            .catch(() => null);
+    });
+
     await loadEvents(client);
     client.log('Events loaded.', 'info');
 

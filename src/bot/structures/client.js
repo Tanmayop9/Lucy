@@ -11,6 +11,7 @@ import { ExtendedEmbedBuilder } from "./embed.js";
 import { ExtendedButtonBuilder } from "./button.js";
 import { OAuth2Scopes } from "discord-api-types/v10";
 import { readyEvent } from "../../lib/services/readyEvent.js";
+import { createGiveawayManager } from "../../lib/services/giveaway.js";
 import {
   Client,
   Partials,
@@ -59,6 +60,7 @@ export class ExtendedClient extends Client {
     this.webhooks = {}; // Will be initialized in ready event
     this.log = (message, type) => void log(message, type);
     this.manager = Manager.init(this);
+    this.giveaways = createGiveawayManager(this);
     this.underMaintenance = false;
     this.prefix = config.prefix || "&";
     this.owners = config.owners;
