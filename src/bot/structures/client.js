@@ -60,7 +60,6 @@ export class ExtendedClient extends Client {
     this.webhooks = {}; // Will be initialized in ready event
     this.log = (message, type) => void log(message, type);
     this.manager = Manager.init(this);
-    this.giveaways = createGiveawayManager(this);
     this.underMaintenance = false;
     this.prefix = config.prefix || "&";
     this.owners = config.owners;
@@ -92,6 +91,8 @@ export class ExtendedClient extends Client {
       },
       twoFourSeven: josh("twoFourSeven"),
     };
+
+    this.giveaways = createGiveawayManager(this);
 
     this.dokdo = null;
 

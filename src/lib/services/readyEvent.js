@@ -153,26 +153,28 @@ export const readyEvent = async (client) => {
         client.log('Webhooks initialized successfully.', 'info');
     }
 
-    // Giveaway: announce winners when a giveaway ends
+    // Announce winners when a giveaway ends
     client.giveaways.on("giveawayEnded", async (giveaway, winners) => {
         const channel = await client.channels.fetch(giveaway.channelId).catch(() => null);
-        if (!channel) return;
-        const winnerMentions = winners.map((w) => `${w}`).join(", ");
-        await channel
-            .send({
-                content: winnerMentions || "No valid participants",
-                embeds: [
-                    client
-                        .embed("#5865F2")
-                        .title("🎉 Giveaway Ended")
-                        .desc(
-                            `**Prize:** ${giveaway.prize}\n` +
-                                `**Winner(s):** ${winnerMentions || "No valid participants"}\n` +
-                                `**Hosted by:** ${giveaway.hostedBy || client.user.toString()}`,
-                        ),
-                ],
-            })
-            .catch(() => null);
+        if (!channel?.isTextBased()) {
+            client.log(`Giveaway ended but channel ${giveaway.channelId} is unreachable (guild: ${giveaway.guildId})`, 'warn');
+            return;
+        }
+        const mentions = winners.map((w) => `${w}`);
+        const winnerList = mentions.length ? mentions.join(", ") : "No valid participants.";
+        await channel.send({
+            content: mentions.length ? mentions.join(" ") : null,
+            embeds: [
+                client
+                    .embed("#5865F2")
+                    .title("Giveaway Ended")
+                    .desc(
+                        `**Prize:** ${giveaway.prize}\n` +
+                        `**Winners:** ${winnerList}\n` +
+                        `**Message:** https://discord.com/channels/${giveaway.guildId}/${giveaway.channelId}/${giveaway.messageId}`,
+                    ),
+            ],
+        }).catch(() => null);
     });
 
     await loadEvents(client);

@@ -1,19 +1,42 @@
 import { GiveawaysManager } from "discord-giveaways";
-import { mkdir } from "node:fs/promises";
-import { resolve } from "node:path";
 
-const STORAGE_DIR = resolve("./database-storage/giveaways");
-const STORAGE_FILE = resolve("./database-storage/giveaways/giveaways.json");
+/**
+ * Extends GiveawaysManager to store giveaway data in the existing
+ * Josh database (client.db.giveaway) instead of a flat JSON file.
+ * Every other data store in this bot uses Josh — giveaways should too.
+ */
+class JoshGiveawaysManager extends GiveawaysManager {
+  /** Load all giveaways from Josh on startup. */
+  async getAllGiveaways() {
+    const keys = await this.client.db.giveaway.keys;
+    if (!keys.length) return [];
+    const entries = await Promise.all(
+      keys.map((k) => this.client.db.giveaway.get(k)),
+    );
+    return entries.filter(Boolean);
+  }
 
-// Ensure storage directory exists before the manager writes to it
-await mkdir(STORAGE_DIR, { recursive: true });
+  /** Persist a new giveaway. */
+  async saveGiveaway(messageId, giveawayData) {
+    await this.client.db.giveaway.set(messageId, giveawayData);
+  }
+
+  /** Update an existing giveaway in place. */
+  async editGiveaway(messageId, giveawayData) {
+    await this.client.db.giveaway.set(messageId, giveawayData);
+  }
+
+  /** Remove a giveaway from the database. */
+  async deleteGiveaway(messageId) {
+    await this.client.db.giveaway.delete(messageId);
+  }
+}
 
 export const createGiveawayManager = (client) =>
-  new GiveawaysManager(client, {
-    storage: STORAGE_FILE,
-    // Check every 5 seconds
+  new JoshGiveawaysManager(client, {
+    // Poll every 5 s to update countdowns / auto-end
     forceUpdateEvery: 5000,
-    // Keep ended giveaways for 24 hours before purging
+    // Purge ended giveaways from the DB after 24 h
     endedGiveawaysLifetime: 86_400_000,
     default: {
       botsCanWin: false,
@@ -23,3 +46,4 @@ export const createGiveawayManager = (client) =>
     },
   });
 /**@codeStyle - https://google.github.io/styleguide/tsguide.html */
+
