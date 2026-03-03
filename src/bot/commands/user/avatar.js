@@ -20,7 +20,7 @@ export default class Avatar extends Command {
 
     const buildEmbed = (url, type) =>
       client
-        .embed("#5865F2")
+        .embed()
         .title(`${target.username} — ${type} Avatar`)
         .desc(`[Open in browser](${url})`)
         .img(url);

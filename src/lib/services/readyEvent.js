@@ -166,7 +166,7 @@ export const readyEvent = async (client) => {
             content: mentions.length ? mentions.join(" ") : null,
             embeds: [
                 client
-                    .embed("#5865F2")
+                    .embed()
                     .title("Giveaway Ended")
                     .desc(
                         `**Prize:** ${giveaway.prize}\n` +

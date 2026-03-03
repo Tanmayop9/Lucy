@@ -37,7 +37,7 @@ export default class Stats extends Command {
     const load = os.loadavg();
 
     const memPage = client
-      .embed("#5865F2")
+      .embed()
       .title("Memory")
       .desc(
         `**Heap Used:** ${toMb(mem.heapUsed)} MB\n` +
@@ -50,12 +50,12 @@ export default class Stats extends Command {
       (s) => `**Shard ${s.id}** — Guilds: ${s.guilds} | Ping: ${s.ping}ms | Status: ${STATUS_MAP[s.status] ?? s.status}`,
     );
     const shardPage = client
-      .embed("#5865F2")
+      .embed()
       .title("Shards")
       .desc(shardLines.join("\n") || "No shard data.");
 
     const cpuPage = client
-      .embed("#5865F2")
+      .embed()
       .title("CPU")
       .desc(
         `**Model:** ${cpu[0]?.model ?? "Unknown"}\n` +
@@ -68,7 +68,7 @@ export default class Stats extends Command {
       ? nodes.map((n) => `**${n.name}** — ${n.state}${n.ping !== null ? ` | Ping: ${n.ping}ms` : ""}`)
       : ["No Lavalink nodes configured."];
     const nodePage = client
-      .embed("#5865F2")
+      .embed()
       .title("Lavalink Nodes")
       .desc(nodeLines.join("\n"));
 

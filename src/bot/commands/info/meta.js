@@ -17,7 +17,7 @@ export default class CodeStats extends Command {
       const stats = await getCodeStats();
 
       const summaryPage = client
-        .embed("#5865F2")
+        .embed()
         .title("Codebase Stats")
         .desc(
           `**Files:** ${stats.files}\n` +

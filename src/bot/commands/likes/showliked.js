@@ -32,7 +32,7 @@ export default class ShowLiked extends Command {
         (s, i) => `\`${start + i + 1}.\` **${s.title}** — ${s.author}`,
       );
       return client
-        .embed("#5865F2")
+        .embed()
         .title(`${ctx.author.username} — Liked Songs`)
         .desc(lines.join("\n"))
         .footer({ text: `Page ${page + 1}/${totalPages} · ${likedSongs.length} songs` });

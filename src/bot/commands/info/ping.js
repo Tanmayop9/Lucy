@@ -31,7 +31,7 @@ export default class Ping extends Command {
       content: null,
       embeds: [
         client
-          .embed("#5865F2")
+          .embed()
           .title("Latency")
           .desc(
             `**WebSocket:** ${wsLatency}ms\n` +

@@ -21,7 +21,7 @@ export default class Commands extends Command {
       await ctx.reply({
         embeds: [
           client
-            .embed("#5865F2")
+            .embed()
             .title("Restricted Commands")
             .desc(lines.join("\n\n") || "No commands found."),
         ],

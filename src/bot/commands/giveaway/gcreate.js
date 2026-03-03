@@ -57,7 +57,7 @@ export default class GCreate extends Command {
           ctx.reply({
             embeds: [
               client
-                .embed("#5865F2")
+                .embed()
                 .title("Giveaway Created")
                 .desc(
                   `**Prize:** ${prize}\n` +

@@ -26,7 +26,7 @@ export default class Queue extends Command {
         return ctx.reply({
           embeds: [
             client
-              .embed("#5865F2")
+              .embed()
               .title("Queue")
               .desc(`${currentLine}\nNo tracks queued.`)
               .footer({ text: `Volume: ${player.volume}%` }),
@@ -41,7 +41,7 @@ export default class Queue extends Command {
             `\`${offset + j + 1}.\` ${t.title} — ${t.author} [${t.isStream ? "Live" : client.formatDuration(t.length ?? 0)}]`,
         );
         return client
-          .embed("#5865F2")
+          .embed()
           .title("Queue")
           .desc(`${currentLine}\n${lines.join("\n")}`)
           .footer({ text: `Page ${i + 1}/${arr.length} · ${upcoming.length} tracks · Volume: ${player.volume}%` });

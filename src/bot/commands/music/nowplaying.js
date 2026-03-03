@@ -15,7 +15,7 @@ export default class NowPlaying extends Command {
 
       const duration = track.isStream ? "Live" : client.formatDuration(track.length ?? 0);
       const embed = client
-        .embed("#5865F2")
+        .embed()
         .title(track.title.length > 256 ? track.title.slice(0, 253) + "..." : track.title)
         .desc(
           `**Artist:** ${track.author}\n` +

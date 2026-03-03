@@ -39,7 +39,7 @@ export default class GUnpause extends Command {
           ctx.reply({
             embeds: [
               client
-                .embed("#5865F2")
+                .embed()
                 .title("Giveaway Resumed")
                 .desc(
                   `**Prize:** ${giveaway?.prize ?? "Unknown"}\n` +

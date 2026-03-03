@@ -22,7 +22,7 @@ export default class GList extends Command {
       // 5 giveaways per page
       const pages = _.chunk(all, 5).map((chunk, i, arr) =>
         client
-          .embed("#5865F2")
+          .embed()
           .title(`Giveaways — ${ctx.guild.name}`)
           .desc(
             chunk

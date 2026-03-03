@@ -130,7 +130,7 @@ export class ExtendedClient extends Client {
       void (await new Promise((resolve) => setTimeout(resolve, s * 1000)));
 
     this.button = () => new ExtendedButtonBuilder();
-    this.embed = (color) => new ExtendedEmbedBuilder(color || "#000000");
+    this.embed = (color) => new ExtendedEmbedBuilder(color || config.embedColor);
 
     this.formatBytes = (bytes) => {
       const power = Math.floor(Math.log(bytes) / Math.log(1024));

@@ -32,7 +32,7 @@ export default class Help extends Command {
 
     const homeEmbed = () =>
       client
-        .embed("#5865F2")
+        .embed()
         .title(`${client.user.username} — Commands`)
         .desc(
           `**Prefix:** \`${prefix}\`\n` +
@@ -77,14 +77,14 @@ export default class Help extends Command {
             `**${cat.charAt(0).toUpperCase() + cat.slice(1)}**\n${cmds.map((c) => `\`${c.name}\``).join("  ")}`,
         );
         embed = client
-          .embed("#5865F2")
+          .embed()
           .title(`${client.user.username} — All Commands`)
           .desc(lines.join("\n\n"));
       } else {
         const cmds = allCommands[selected] ?? [];
         const lines = cmds.map((c) => `\`${c.name}\` — ${c.description || "No description"}`);
         embed = client
-          .embed("#5865F2")
+          .embed()
           .title(`${selected.charAt(0).toUpperCase() + selected.slice(1)} Commands`)
           .desc(lines.join("\n") || "No commands in this category.")
           .footer({ text: `${cmds.length} command${cmds.length !== 1 ? "s" : ""}` });

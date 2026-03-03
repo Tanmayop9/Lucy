@@ -40,7 +40,7 @@ export const createGiveawayManager = (client) =>
     endedGiveawaysLifetime: 86_400_000,
     default: {
       botsCanWin: false,
-      embedColor: "#5865F2",
+      embedColor: client.config.embedColor,
       embedColorEnd: "#2F3136",
       reaction: "🎉",
     },

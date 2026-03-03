@@ -35,7 +35,7 @@ export default class Profile extends Command {
         : null;
 
       const statsPage = client
-        .embed("#5865F2")
+        .embed()
         .title(`${ctx.author.username} — Stats`)
         .desc(
           `**Commands Used:** ${commandsUsed ?? 0}\n` +
@@ -47,7 +47,7 @@ export default class Profile extends Command {
         .thumb(ctx.author.displayAvatarURL({ size: 256 }));
 
       const spotifyPage = client
-        .embed("#5865F2")
+        .embed()
         .title(`${ctx.author.username} — Spotify`)
         .desc(
           spotifyData
@@ -56,7 +56,7 @@ export default class Profile extends Command {
         );
 
       const accountPage = client
-        .embed("#5865F2")
+        .embed()
         .title(`${ctx.author.username} — Account`)
         .desc(
           `**Username:** ${ctx.author.username}\n` +
@@ -67,7 +67,7 @@ export default class Profile extends Command {
         .thumb(ctx.author.displayAvatarURL({ size: 256 }));
 
       const memberPage = client
-        .embed("#5865F2")
+        .embed()
         .title(`${ctx.author.username} — Member`)
         .desc(
           `**Nickname:** ${ctx.member?.nickname ?? "None"}\n` +

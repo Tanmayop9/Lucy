@@ -46,7 +46,7 @@ export default class GReroll extends Command {
           ctx.reply({
             embeds: [
               client
-                .embed("#5865F2")
+                .embed()
                 .title("Giveaway Rerolled")
                 .desc(
                   `**Prize:** ${giveaway.prize}\n` +

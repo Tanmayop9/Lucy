@@ -100,7 +100,7 @@ export default class GEdit extends Command {
           ctx.reply({
             embeds: [
               client
-                .embed("#5865F2")
+                .embed()
                 .title("Giveaway Updated")
                 .desc(
                   `**Prize:** ${editOptions.newPrize ?? giveaway?.prize ?? "Unknown"}\n` +

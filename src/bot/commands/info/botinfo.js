@@ -24,7 +24,7 @@ export default class BotInfo extends Command {
 
     const overviewEmbed = () =>
       client
-        .embed("#5865F2")
+        .embed()
         .title(`${client.user.username} — Overview`)
         .desc(
           `**Name:** ${client.user.username}\n` +
@@ -68,7 +68,7 @@ export default class BotInfo extends Command {
         const mem = process.memoryUsage();
         const cpu = os.cpus()[0];
         embed = client
-          .embed("#5865F2")
+          .embed()
           .title(`${client.user.username} — System`)
           .desc(
             `**Node.js:** ${process.version}\n` +
@@ -81,7 +81,7 @@ export default class BotInfo extends Command {
           );
       } else if (choice === "developer") {
         embed = client
-          .embed("#5865F2")
+          .embed()
           .title(`${client.user.username} — Developer`)
           .desc(
             `**Team:** NeroX Studios\n` +
@@ -91,7 +91,7 @@ export default class BotInfo extends Command {
           );
       } else if (choice === "stats") {
         embed = client
-          .embed("#5865F2")
+          .embed()
           .title(`${client.user.username} — Stats`)
           .desc(
             `**WebSocket Ping:** ${client.ws.ping}ms\n` +

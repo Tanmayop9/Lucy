@@ -33,7 +33,7 @@ export default class ServerInfo extends Command {
     const bots = members.filter((m) => m.user.bot).size;
 
     const baseEmbed = client
-      .embed("#5865F2")
+      .embed()
       .title(guild.name)
       .desc("Select a section from the menu below.")
       .footer({ text: `ID: ${guild.id}` });
@@ -67,7 +67,7 @@ export default class ServerInfo extends Command {
       if (val === "overview") {
         const createdAt = Math.floor(guild.createdTimestamp / 1000);
         embed = client
-          .embed("#5865F2")
+          .embed()
           .title(`${guild.name} — Overview`)
           .desc(
             `**Name:** ${guild.name}\n` +
@@ -82,7 +82,7 @@ export default class ServerInfo extends Command {
 
       } else if (val === "channels") {
         embed = client
-          .embed("#5865F2")
+          .embed()
           .title(`${guild.name} — Channels`)
           .desc(
             `**Text:** ${textCount}\n` +
@@ -95,7 +95,7 @@ export default class ServerInfo extends Command {
 
       } else if (val === "members") {
         embed = client
-          .embed("#5865F2")
+          .embed()
           .title(`${guild.name} — Members`)
           .desc(
             `**Total:** ${guild.memberCount}\n` +
@@ -110,7 +110,7 @@ export default class ServerInfo extends Command {
           .sort((a, b) => b.position - a.position);
         const roleList = roles.first(20).map((r) => r.toString()).join(" ");
         embed = client
-          .embed("#5865F2")
+          .embed()
           .title(`${guild.name} — Roles`)
           .desc(
             `**Total:** ${roles.size}\n\n` +
@@ -121,7 +121,7 @@ export default class ServerInfo extends Command {
       } else if (val === "security") {
         const afkChannel = guild.afkChannelId ? `<#${guild.afkChannelId}>` : "None";
         embed = client
-          .embed("#5865F2")
+          .embed()
           .title(`${guild.name} — Security & Boosts`)
           .desc(
             `**Verification Level:** ${VERIFICATION[guild.verificationLevel] ?? guild.verificationLevel}\n` +

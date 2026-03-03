@@ -37,7 +37,7 @@ export default class GEnd extends Command {
           ctx.reply({
             embeds: [
               client
-                .embed("#5865F2")
+                .embed()
                 .title("Giveaway Ended")
                 .desc(
                   `**Prize:** ${giveaway?.prize ?? "Unknown"}\n` +

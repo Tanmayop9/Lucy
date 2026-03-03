@@ -54,7 +54,7 @@ export default class StaffManage extends Command {
 
         const pages = _.chunk(users, 8).map((chunk, i, arr) =>
           client
-            .embed("#5865F2")
+            .embed()
             .title("Premium Members")
             .desc(
               chunk
@@ -103,7 +103,7 @@ export default class StaffManage extends Command {
         return ctx.reply({
           embeds: [
             client
-              .embed("#5865F2")
+              .embed()
               .title("Premium Added")
               .desc(
                 `**User:** ${userArg.username}\n` +

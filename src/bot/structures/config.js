@@ -11,6 +11,7 @@ export const config = {
   ],
   admins: process.env.ADMIN_IDS?.split(",") || ["991517803700027443"],
   prefix: process.env.PREFIX || "&",
+  embedColor: process.env.EMBED_COLOR || "#5865F2",
   links: {
     support: process.env.SUPPORT_SERVER || "https://discord.gg/p6nXDJMeyc",
   },
