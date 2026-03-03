@@ -1,12 +1,7 @@
-/**
- * @nerox v1.0.0
- * @author Tanmay
- */
 import _ from "lodash";
 import { Command } from "../../structures/abstract/command.js";
 import { paginator } from "../../../lib/utils/paginator.js";
 import { getCodeStats } from "../../../lib/utils/codestats.js";
-import { raw } from "../../../lib/utils/raw.js";
 
 export default class CodeStats extends Command {
   constructor() {
@@ -16,33 +11,27 @@ export default class CodeStats extends Command {
     this.description = "View full details about the bot's codebase.";
     this.execute = async (client, ctx) => {
       const msg = await ctx.reply({
-        embeds: [
-          client.embed().desc(`${client.emoji.loading} Analyzing codebase...`),
-        ],
+        embeds: [client.embed().desc("Analyzing codebase...")],
       });
 
       const stats = await getCodeStats();
 
-      const embeds = [
-        client.embed().desc(
-          raw({
-            files: stats.files,
-            directories: stats.directories,
-            lines: stats.lines,
-            characters: stats.characters,
-            avgLinesPerFile: Math.floor(stats.lines / stats.files),
-          }),
-        ),
-      ];
-
-      const treeChunks = _.chunk(stats.tree, 20);
-      for (const chunk of treeChunks) {
-        embeds.push(
-          client.embed().desc(`\`\`\`bash\n${chunk.join("\n")}\n\`\`\``),
+      const summaryPage = client
+        .embed("#5865F2")
+        .title("Codebase Stats")
+        .desc(
+          `**Files:** ${stats.files}\n` +
+          `**Directories:** ${stats.directories}\n` +
+          `**Lines:** ${stats.lines.toLocaleString()}\n` +
+          `**Characters:** ${stats.characters.toLocaleString()}\n` +
+          `**Avg Lines per File:** ${Math.floor(stats.lines / stats.files)}`,
         );
-      }
 
-      await paginator(ctx, embeds);
+      const treePages = _.chunk(stats.tree, 20).map((chunk) =>
+        client.embed().desc(`\`\`\`bash\n${chunk.join("\n")}\n\`\`\``),
+      );
+
+      await paginator(ctx, [summaryPage, ...treePages]);
       await msg.delete().catch(() => {});
     };
   }

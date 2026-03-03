@@ -5,64 +5,48 @@ import {
 } from "discord.js";
 import { Command } from "../../structures/abstract/command.js";
 import { filter } from "../../../lib/utils/filter.js";
-import { raw } from "../../../lib/utils/raw.js";
+
+const VERIFICATION = ["None", "Low", "Medium", "High", "Very High"];
+const BOOST_TIER = ["None", "Tier 1", "Tier 2", "Tier 3"];
 
 export default class ServerInfo extends Command {
   constructor() {
     super(...arguments);
-    this.description = "Unveils an ultra-detailed snapshot of the server.";
+    this.description = "Displays a detailed overview of the server.";
   }
 
   async execute(client, ctx) {
     const guild = ctx.guild;
     if (!guild)
-      return ctx.reply({
-        content: "This command must be used in a server.",
-        ephemeral: true,
-      });
-
-    const roles = guild.roles.cache
-      .filter((r) => r.id !== guild.id)
-      .sort((a, b) => b.position - a.position)
-      .map((r) => r.toString());
+      return ctx.reply({ content: "This command must be used in a server." });
 
     const channels = guild.channels.cache;
-    const stats = {
-      text: channels.filter((c) => c.type === ChannelType.GuildText).size,
-      voice: channels.filter((c) => c.type === ChannelType.GuildVoice).size,
-      categories: channels.filter((c) => c.type === ChannelType.GuildCategory)
-        .size,
-      threads: channels.filter((c) =>
-        [
-          ChannelType.PublicThread,
-          ChannelType.PrivateThread,
-          ChannelType.AnnouncementThread,
-        ].includes(c.type),
-      ).size,
-    };
+    const textCount = channels.filter((c) => c.type === ChannelType.GuildText).size;
+    const voiceCount = channels.filter((c) => c.type === ChannelType.GuildVoice).size;
+    const categoryCount = channels.filter((c) => c.type === ChannelType.GuildCategory).size;
+    const threadCount = channels.filter((c) =>
+      [ChannelType.PublicThread, ChannelType.PrivateThread, ChannelType.AnnouncementThread].includes(c.type),
+    ).size;
 
-    const members = await guild.members.fetch({ withPresences: true });
+    const members = await guild.members.fetch();
     const humans = members.filter((m) => !m.user.bot).size;
     const bots = members.filter((m) => m.user.bot).size;
 
     const baseEmbed = client
-      .embed()
-      .desc(`Select a category below to explore in detail.`)
-      .footer({ text: `Server ID: ${guild.id}` });
+      .embed("#5865F2")
+      .title(guild.name)
+      .desc("Select a section from the menu below.")
+      .footer({ text: `ID: ${guild.id}` });
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId("serverinfo_menu")
-      .setPlaceholder("Choose a section to view")
+      .setPlaceholder("Choose a section")
       .addOptions([
-        { label: "Overview", value: "overview", emoji: client.emoji.info },
-        { label: "Channels", value: "channels", emoji: client.emoji.info },
-        { label: "Members", value: "members", emoji: client.emoji.info },
-        { label: "Roles", value: "roles", emoji: client.emoji.info },
-        {
-          label: "Security & Boosts",
-          value: "security",
-          emoji: client.emoji.info,
-        },
+        { label: "Overview", value: "overview" },
+        { label: "Channels", value: "channels" },
+        { label: "Members", value: "members" },
+        { label: "Roles", value: "roles" },
+        { label: "Security & Boosts", value: "security" },
       ]);
 
     const msg = await ctx.reply({
@@ -78,35 +62,80 @@ export default class ServerInfo extends Command {
     collector.on("collect", async (interaction) => {
       await interaction.deferUpdate();
       const val = interaction.values[0];
+      let embed;
 
       if (val === "overview") {
-        const embed = client.embed().desc(raw(guild, 1));
-        await msg.edit({ embeds: [embed] });
+        const createdAt = Math.floor(guild.createdTimestamp / 1000);
+        embed = client
+          .embed("#5865F2")
+          .title(`${guild.name} — Overview`)
+          .desc(
+            `**Name:** ${guild.name}\n` +
+            `**ID:** \`${guild.id}\`\n` +
+            `**Owner:** <@${guild.ownerId}>\n` +
+            `**Created:** <t:${createdAt}:R>\n` +
+            `**Locale:** ${guild.preferredLocale}\n` +
+            `**Description:** ${guild.description || "None"}`,
+          )
+          .thumb(guild.iconURL({ size: 256 }) ?? null)
+          .footer({ text: `ID: ${guild.id}` });
+
       } else if (val === "channels") {
-        const embed = client.embed().desc(raw(guild.channels.cache, 1));
-        await msg.edit({ embeds: [embed] });
+        embed = client
+          .embed("#5865F2")
+          .title(`${guild.name} — Channels`)
+          .desc(
+            `**Text:** ${textCount}\n` +
+            `**Voice:** ${voiceCount}\n` +
+            `**Categories:** ${categoryCount}\n` +
+            `**Threads:** ${threadCount}\n` +
+            `**Total:** ${channels.size}`,
+          )
+          .footer({ text: `ID: ${guild.id}` });
+
       } else if (val === "members") {
-        const embed = client.embed().desc(raw(members, 1));
-        await msg.edit({ embeds: [embed] });
+        embed = client
+          .embed("#5865F2")
+          .title(`${guild.name} — Members`)
+          .desc(
+            `**Total:** ${guild.memberCount}\n` +
+            `**Humans:** ${humans}\n` +
+            `**Bots:** ${bots}`,
+          )
+          .footer({ text: `ID: ${guild.id}` });
+
       } else if (val === "roles") {
-        const embed = client.embed().desc(raw(guild.roles.cache, 1));
-        await msg.edit({ embeds: [embed] });
+        const roles = guild.roles.cache
+          .filter((r) => r.id !== guild.id)
+          .sort((a, b) => b.position - a.position);
+        const roleList = roles.first(20).map((r) => r.toString()).join(" ");
+        embed = client
+          .embed("#5865F2")
+          .title(`${guild.name} — Roles`)
+          .desc(
+            `**Total:** ${roles.size}\n\n` +
+            (roleList || "No roles found"),
+          )
+          .footer({ text: `Showing up to 20 · ID: ${guild.id}` });
+
       } else if (val === "security") {
-        const embed = client.embed().desc(
-          raw({
-            verificationLevel: guild.verificationLevel,
-            premiumTier: guild.premiumTier,
-            premiumSubscriptionCount: guild.premiumSubscriptionCount,
-            afkTimeout: guild.afkTimeout,
-            afkChannelId: guild.afkChannelId,
-          }),
-        );
-        await msg.edit({ embeds: [embed] });
+        const afkChannel = guild.afkChannelId ? `<#${guild.afkChannelId}>` : "None";
+        embed = client
+          .embed("#5865F2")
+          .title(`${guild.name} — Security & Boosts`)
+          .desc(
+            `**Verification Level:** ${VERIFICATION[guild.verificationLevel] ?? guild.verificationLevel}\n` +
+            `**Boost Tier:** ${BOOST_TIER[guild.premiumTier] ?? guild.premiumTier}\n` +
+            `**Boosts:** ${guild.premiumSubscriptionCount ?? 0}\n` +
+            `**AFK Timeout:** ${guild.afkTimeout ? `${guild.afkTimeout}s` : "Disabled"}\n` +
+            `**AFK Channel:** ${afkChannel}`,
+          )
+          .footer({ text: `ID: ${guild.id}` });
       }
+
+      if (embed) await msg.edit({ embeds: [embed] });
     });
 
-    collector.on("end", () => {
-      msg.edit({ components: [] }).catch(() => null);
-    });
+    collector.on("end", () => msg.edit({ components: [] }).catch(() => null));
   }
 }

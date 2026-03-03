@@ -1,7 +1,6 @@
 import { ActionRowBuilder, StringSelectMenuBuilder } from "discord.js";
 import { filter } from "../../../lib/utils/filter.js";
 import { Command } from "../../structures/abstract/command.js";
-import { raw } from "../../../lib/utils/raw.js";
 
 export default class Help extends Command {
   constructor() {
@@ -11,60 +10,52 @@ export default class Help extends Command {
   }
 
   async execute(client, ctx) {
+    const HIDDEN = ["owner", "mod", "debug"];
+
     const allCommands = client.commands.reduce((acc, cmd) => {
-      if (["owner", "mod", "debug"].includes(cmd.category)) return acc;
+      if (HIDDEN.includes(cmd.category)) return acc;
       acc[cmd.category] ||= [];
-      acc[cmd.category].push({
-        name: cmd.name,
-        description:
-          cmd.description?.length > 30
-            ? cmd.description.substring(0, 27) + "..."
-            : cmd.description || "No description",
-      });
+      acc[cmd.category].push(cmd);
       return acc;
     }, {});
 
-    // Sort commands alphabetically within each category
-    Object.keys(allCommands).forEach((category) => {
-      allCommands[category].sort((a, b) => a.name.localeCompare(b.name));
-    });
+    Object.keys(allCommands).forEach((cat) =>
+      allCommands[cat].sort((a, b) => a.name.localeCompare(b.name)),
+    );
 
     const categories = client.categories
-      .sort((b, a) => b.length - a.length)
-      .filter((category) => !["owner", "mod", "debug"].includes(category));
+      .sort((a, b) => a.length - b.length)
+      .filter((c) => !HIDDEN.includes(c));
 
-    const totalCommands = client.commands.filter(
-      (cmd) => !["owner", "mod", "debug"].includes(cmd.category),
-    ).size;
+    const totalCommands = client.commands.filter((c) => !HIDDEN.includes(c.category)).size;
+    const prefix = (await client.db.prefix.get(ctx.guild.id)) || client.prefix;
 
-    const embed = client
-      .embed()
-      .desc(raw({ prefix: client.prefix, commands: totalCommands }));
+    const homeEmbed = () =>
+      client
+        .embed("#5865F2")
+        .title(`${client.user.username} — Commands`)
+        .desc(
+          `**Prefix:** \`${prefix}\`\n` +
+          `**Commands:** ${totalCommands}\n\n` +
+          `Select a category from the menu below.`,
+        );
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId("menu")
       .setPlaceholder("Select a category")
       .setMaxValues(1)
       .addOptions([
-        {
-          label: "Home",
-          value: "home",
-          description: "Main menu",
-        },
-        ...categories.map((category) => ({
-          label: category.charAt(0).toUpperCase() + category.slice(1),
-          value: category,
-          description: `${allCommands[category]?.length || 0} commands`,
+        { label: "Home", value: "home", description: "Main menu" },
+        ...categories.map((cat) => ({
+          label: cat.charAt(0).toUpperCase() + cat.slice(1),
+          value: cat,
+          description: `${allCommands[cat]?.length ?? 0} commands`,
         })),
-        {
-          label: "All Commands",
-          value: "all",
-          description: "View all commands",
-        },
+        { label: "All Commands", value: "all", description: "View every command" },
       ]);
 
     const reply = await ctx.reply({
-      embeds: [embed],
+      embeds: [homeEmbed()],
       components: [new ActionRowBuilder().addComponents(menu)],
     });
 
@@ -76,51 +67,36 @@ export default class Help extends Command {
     collector.on("collect", async (interaction) => {
       await interaction.deferUpdate();
       const selected = interaction.values[0];
+      let embed;
 
-      switch (selected) {
-        case "home":
-          await reply.edit({ embeds: [embed] });
-          break;
-
-        case "all": {
-          const allEmbed = client
-            .embed()
-            .desc(
-              raw(
-                Object.fromEntries(
-                  Object.entries(allCommands).map(([cat, cmds]) => [
-                    cat,
-                    cmds.map((c) => c.name),
-                  ]),
-                ),
-              ),
-            );
-          await reply.edit({ embeds: [allEmbed] });
-          break;
-        }
-
-        default: {
-          const selectedCommands = allCommands[selected] || [];
-          const categoryEmbed = client
-            .embed()
-            .desc(
-              selectedCommands.length
-                ? raw(selectedCommands.map((c) => [c.name, c.description]))
-                : "No commands",
-            );
-
-          await reply.edit({ embeds: [categoryEmbed] });
-          break;
-        }
+      if (selected === "home") {
+        embed = homeEmbed();
+      } else if (selected === "all") {
+        const lines = Object.entries(allCommands).map(
+          ([cat, cmds]) =>
+            `**${cat.charAt(0).toUpperCase() + cat.slice(1)}**\n${cmds.map((c) => `\`${c.name}\``).join("  ")}`,
+        );
+        embed = client
+          .embed("#5865F2")
+          .title(`${client.user.username} — All Commands`)
+          .desc(lines.join("\n\n"));
+      } else {
+        const cmds = allCommands[selected] ?? [];
+        const lines = cmds.map((c) => `\`${c.name}\` — ${c.description || "No description"}`);
+        embed = client
+          .embed("#5865F2")
+          .title(`${selected.charAt(0).toUpperCase() + selected.slice(1)} Commands`)
+          .desc(lines.join("\n") || "No commands in this category.")
+          .footer({ text: `${cmds.length} command${cmds.length !== 1 ? "s" : ""}` });
       }
+
+      await reply.edit({ embeds: [embed] });
     });
 
     collector.on("end", async () => {
       menu.setDisabled(true);
       await reply
-        .edit({
-          components: [new ActionRowBuilder().addComponents(menu)],
-        })
+        .edit({ components: [new ActionRowBuilder().addComponents(menu)] })
         .catch(() => null);
     });
   }

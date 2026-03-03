@@ -5,7 +5,6 @@
  */
 
 import { Command } from "../../structures/abstract/command.js";
-import { raw } from "../../../lib/utils/raw.js";
 
 export default class Ping extends Command {
   constructor() {
@@ -16,28 +15,30 @@ export default class Ping extends Command {
 
   execute = async (client, ctx) => {
     const msg = await ctx.reply({
-      embeds: [client.embed().desc(`Checking latency...`)],
+      embeds: [client.embed().desc("Checking latency...")],
     });
 
     const start = performance.now();
-    await client.db.blacklist.set("test", true);
-    await client.db.blacklist.get("test");
-    await client.db.blacklist.delete("test");
+    await client.db.blacklist.set("ping_test", true);
+    await client.db.blacklist.get("ping_test");
+    await client.db.blacklist.delete("ping_test");
     const dbLatency = (performance.now() - start).toFixed(2);
 
     const wsLatency = client.ws.ping.toFixed(2);
     const msgLatency = msg.createdTimestamp - ctx.createdTimestamp;
 
-    const embed = client
-      .embed()
-      .desc(
-        raw({
-          ws: `${wsLatency}ms`,
-          db: `${dbLatency}ms`,
-          msg: `${msgLatency}ms`,
-        }),
-      );
-
-    await msg.edit({ content: null, embeds: [embed] });
+    await msg.edit({
+      content: null,
+      embeds: [
+        client
+          .embed("#5865F2")
+          .title("Latency")
+          .desc(
+            `**WebSocket:** ${wsLatency}ms\n` +
+            `**Database:** ${dbLatency}ms\n` +
+            `**Message:** ${msgLatency}ms`,
+          ),
+      ],
+    });
   };
 }

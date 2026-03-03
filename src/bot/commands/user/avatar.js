@@ -1,35 +1,31 @@
-/** @format
- * Neptune by Tanmay
- * Version: 2.0.1 (Beta)
- * © 2024 Neptune Headquarters
- */
-
 import { Command } from "../../structures/abstract/command.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { raw } from "../../../lib/utils/raw.js";
 
 export default class Avatar extends Command {
   constructor() {
     super(...arguments);
     this.aliases = ["av", "avatar", "img"];
-    this.description = "Displays the user/server avatar with buttons";
+    this.description = "Displays a user's avatar.";
     this.usage = "[user]";
   }
 
   execute = async (client, ctx) => {
-    const target = ctx.mentions.users.first() || ctx.author;
+    const target = ctx.mentions?.users?.first() || ctx.author;
     const member = ctx.guild?.members.cache.get(target.id);
 
-    const userAvatar = target.displayAvatarURL({ forceStatic: false, size: 4096 });
-    const serverAvatar = member?.avatar
+    const userUrl = target.displayAvatarURL({ forceStatic: false, size: 4096 });
+    const serverUrl = member?.avatar
       ? member.displayAvatarURL({ forceStatic: false, size: 4096 })
       : null;
 
-    const embed = client
-      .embed()
-      .desc(raw({ user: userAvatar, server: serverAvatar || null }));
+    const buildEmbed = (url, type) =>
+      client
+        .embed("#5865F2")
+        .title(`${target.username} — ${type} Avatar`)
+        .desc(`[Open in browser](${url})`)
+        .img(url);
 
-    if (serverAvatar && userAvatar !== serverAvatar) {
+    if (serverUrl && serverUrl !== userUrl) {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("user_avatar")
@@ -41,7 +37,10 @@ export default class Avatar extends Command {
           .setStyle(ButtonStyle.Secondary),
       );
 
-      const msg = await ctx.reply({ embeds: [embed], components: [row] });
+      const msg = await ctx.reply({
+        embeds: [buildEmbed(userUrl, "User")],
+        components: [row],
+      });
 
       const collector = msg.createMessageComponentCollector({
         filter: (i) => i.user.id === ctx.author.id,
@@ -49,31 +48,15 @@ export default class Avatar extends Command {
       });
 
       collector.on("collect", async (interaction) => {
-        const type = interaction.customId;
-        if (type === "user_avatar") {
-          await interaction.update({
-            embeds: [
-              client
-                .embed()
-                .desc(raw({ user: userAvatar, server: serverAvatar || null })),
-            ],
-          });
-        } else if (type === "server_avatar") {
-          await interaction.update({
-            embeds: [
-              client
-                .embed()
-                .desc(raw({ user: userAvatar, server: serverAvatar })),
-            ],
-          });
-        }
+        const isUser = interaction.customId === "user_avatar";
+        await interaction.update({
+          embeds: [buildEmbed(isUser ? userUrl : serverUrl, isUser ? "User" : "Server")],
+        });
       });
 
-      collector.on("end", () => {
-        msg.edit({ components: [] }).catch(() => {});
-      });
+      collector.on("end", () => msg.edit({ components: [] }).catch(() => {}));
     } else {
-      await ctx.reply({ embeds: [embed] });
+      await ctx.reply({ embeds: [buildEmbed(userUrl, "User")] });
     }
   };
 }

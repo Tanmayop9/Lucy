@@ -1,41 +1,29 @@
-/**
- * @fuego v1.0.0
- * @author painfuego (www.codes-for.fun)
- * @copyright 2024 1sT - Services | CC BY-NC-SA 4.0
- */
 import { Command } from "../../structures/abstract/command.js";
-import { raw } from "../../../lib/utils/raw.js";
 export default class Commands extends Command {
   constructor() {
     super(...arguments);
     this.aliases = ["dh"];
-    this.description = "List of all owner only commands";
+    this.description = "Lists all restricted commands by category.";
     this.execute = async (client, ctx) => {
-      const allCommands = client.commands.reduce((accumulator, cmd) => {
-        if (
-          cmd.category === "information" ||
-          cmd.category === "music" ||
-          cmd.category === "premium"
-        )
-          return accumulator;
-        accumulator[cmd.category] ||= [];
-        accumulator[cmd.category].push({
-          name: cmd.name,
-        });
-        return accumulator;
+      const HIDDEN = ["information", "music", "premium"];
+      const grouped = client.commands.reduce((acc, cmd) => {
+        if (HIDDEN.includes(cmd.category)) return acc;
+        acc[cmd.category] ||= [];
+        acc[cmd.category].push(cmd.name);
+        return acc;
       }, {});
+
+      const lines = Object.entries(grouped).map(
+        ([cat, cmds]) =>
+          `**${cat.charAt(0).toUpperCase() + cat.slice(1)}**\n${cmds.map((n) => `\`${n}\``).join("  ")}`,
+      );
+
       await ctx.reply({
         embeds: [
-          client.embed().desc(
-            raw(
-              Object.fromEntries(
-                Object.entries(allCommands).map(([cat, cmds]) => [
-                  cat,
-                  cmds.map((c) => c.name),
-                ]),
-              ),
-            ),
-          ),
+          client
+            .embed("#5865F2")
+            .title("Restricted Commands")
+            .desc(lines.join("\n\n") || "No commands found."),
         ],
       });
     };

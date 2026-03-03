@@ -1,115 +1,93 @@
 import { Command } from "../../structures/abstract/command.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { raw } from "../../../lib/utils/raw.js";
 
 export default class ShowLiked extends Command {
   constructor() {
     super(...arguments);
     this.aliases = ["likedlist", "ll"];
-    this.description = "Show your liked songs";
+    this.description = "Show your liked songs.";
   }
 
   execute = async (client, ctx) => {
     const likedSongs = (await client.db.likedSongs.get(ctx.author.id)) || [];
 
-    if (likedSongs.length === 0) {
-      await ctx.reply({
+    if (!likedSongs.length) {
+      return ctx.reply({
         embeds: [
           client
             .embed()
-            .desc(
-              `${client.emoji.cross} **No Liked Songs!**\n\n` +
-                `${client.emoji.info1} Use \`like\` while a song is playing to add it to your liked songs!`,
-            ),
+            .desc("You have no liked songs. Use `like` while a song is playing to add one."),
         ],
       });
-      return;
     }
 
-    const itemsPerPage = 10;
-    const totalPages = Math.ceil(likedSongs.length / itemsPerPage);
+    const PER_PAGE = 10;
+    const totalPages = Math.ceil(likedSongs.length / PER_PAGE);
     let currentPage = 0;
 
-    const generateEmbed = (page) => {
-      const start = page * itemsPerPage;
-      const end = start + itemsPerPage;
-      const pageSongs = likedSongs.slice(start, end);
-      return client.embed().desc(raw(pageSongs));
+    const buildEmbed = (page) => {
+      const start = page * PER_PAGE;
+      const songs = likedSongs.slice(start, start + PER_PAGE);
+      const lines = songs.map(
+        (s, i) => `\`${start + i + 1}.\` **${s.title}** — ${s.author}`,
+      );
+      return client
+        .embed("#5865F2")
+        .title(`${ctx.author.username} — Liked Songs`)
+        .desc(lines.join("\n"))
+        .footer({ text: `Page ${page + 1}/${totalPages} · ${likedSongs.length} songs` });
     };
 
-    const generateButtons = (page) => {
-      const row = new ActionRowBuilder();
-
-      row.addComponents(
+    const buildRow = (page) =>
+      new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId("first")
-          .setEmoji("⏮️")
+          .setLabel("First")
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(page === 0),
-      );
-
-      row.addComponents(
         new ButtonBuilder()
           .setCustomId("prev")
-          .setEmoji("◀️")
+          .setLabel("Previous")
           .setStyle(ButtonStyle.Primary)
           .setDisabled(page === 0),
-      );
-
-      row.addComponents(
         new ButtonBuilder()
           .setCustomId("next")
-          .setEmoji("▶️")
+          .setLabel("Next")
           .setStyle(ButtonStyle.Primary)
           .setDisabled(page === totalPages - 1),
-      );
-
-      row.addComponents(
         new ButtonBuilder()
           .setCustomId("last")
-          .setEmoji("⏭️")
+          .setLabel("Last")
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(page === totalPages - 1),
       );
 
-      return row;
-    };
-
     const message = await ctx.reply({
-      embeds: [generateEmbed(currentPage)],
-      components: totalPages > 1 ? [generateButtons(currentPage)] : [],
+      embeds: [buildEmbed(currentPage)],
+      components: totalPages > 1 ? [buildRow(currentPage)] : [],
     });
 
     if (totalPages <= 1) return;
 
     const collector = message.createMessageComponentCollector({
       filter: (i) => i.user.id === ctx.author.id,
-      time: 120000, // 2 minutes
+      time: 120000,
     });
 
     collector.on("collect", async (interaction) => {
-      if (interaction.customId === "first") {
-        currentPage = 0;
-      } else if (interaction.customId === "prev") {
-        currentPage = Math.max(0, currentPage - 1);
-      } else if (interaction.customId === "next") {
-        currentPage = Math.min(totalPages - 1, currentPage + 1);
-      } else if (interaction.customId === "last") {
-        currentPage = totalPages - 1;
-      }
+      if (interaction.customId === "first") currentPage = 0;
+      else if (interaction.customId === "prev") currentPage = Math.max(0, currentPage - 1);
+      else if (interaction.customId === "next") currentPage = Math.min(totalPages - 1, currentPage + 1);
+      else if (interaction.customId === "last") currentPage = totalPages - 1;
 
       await interaction.update({
-        embeds: [generateEmbed(currentPage)],
-        components: [generateButtons(currentPage)],
+        embeds: [buildEmbed(currentPage)],
+        components: [buildRow(currentPage)],
       });
     });
 
     collector.on("end", async () => {
-      try {
-        await message.edit({ components: [] });
-      } catch {
-        // Message might have been deleted
-      }
+      await message.edit({ components: [] }).catch(() => {});
     });
   };
 }
