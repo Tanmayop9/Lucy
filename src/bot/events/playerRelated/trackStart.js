@@ -62,15 +62,7 @@ export default class PlayerStart {
               player?.data.get("autoplayStatus") ? "success" : "secondary"
             ](`playEmbedButton_${player.guildId}_autoplay`, ``, client.emoji.autoplay),
         ]),
-        new ActionRowBuilder().addComponents([
-          client
-            .button()
-            .secondary(
-              `playEmbedButton_${player.guildId}_like`,
-              `Like`,
-              client.emoji.heart,
-            ),
-        ]),
+
       ],
     });
 

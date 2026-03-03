@@ -7,11 +7,10 @@ export default class Profile extends Command {
     this.aliases = ["pr"];
     this.description = "Shows your user profile.";
     this.execute = async (client, ctx) => {
-      const [commandsUsed, songsPlayed, likedSongs, spotifyData, afkData, premiumData] =
+      const [commandsUsed, songsPlayed, spotifyData, afkData, premiumData] =
         await Promise.all([
           client.db.stats.commandsUsed.get(ctx.author.id),
           client.db.stats.songsPlayed.get(ctx.author.id),
-          client.db.likedSongs.get(ctx.author.id),
           client.db.spotify.get(ctx.author.id),
           client.db.afk.get(ctx.author.id),
           client.db.botstaff.get(ctx.author.id),
@@ -40,7 +39,6 @@ export default class Profile extends Command {
         .desc(
           `**Commands Used:** ${commandsUsed ?? 0}\n` +
           `**Songs Played:** ${songsPlayed ?? 0}\n` +
-          `**Liked Songs:** ${(likedSongs ?? []).length}\n` +
           `**Premium:** ${isPremium}\n` +
           `**AFK:** ${isAfk}`,
         )
