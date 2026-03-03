@@ -1,6 +1,7 @@
 import { ActionRowBuilder, StringSelectMenuBuilder } from "discord.js";
 import { filter } from "../../../lib/utils/filter.js";
 import { Command } from "../../structures/abstract/command.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class Help extends Command {
   constructor() {
@@ -38,17 +39,7 @@ export default class Help extends Command {
 
     const embed = client
       .embed()
-      .setAuthor({
-        name: client.user.username,
-        iconURL: client.user.displayAvatarURL(),
-      })
-      .desc(
-        `\`\`\`\n` +
-          `Prefix: ${client.prefix}\n` +
-          `Commands: ${totalCommands}\n` +
-          `\`\`\`\n` +
-          `\`<>\` required • \`[]\` optional`,
-      );
+      .desc(raw({ prefix: client.prefix, commands: totalCommands }));
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId("menu")
@@ -94,19 +85,15 @@ export default class Help extends Command {
         case "all": {
           const allEmbed = client
             .embed()
-            .setAuthor({
-              name: client.user.username,
-              iconURL: client.user.displayAvatarURL(),
-            })
             .desc(
-              Object.entries(allCommands)
-                .sort((a, b) => a[0].localeCompare(b[0]))
-                .map(
-                  ([cat, cmds]) =>
-                    `**${cat.charAt(0).toUpperCase() + cat.slice(1)}**\n` +
-                    `${cmds.map((cmd) => `\`${cmd.name}\``).join(" • ")}`,
-                )
-                .join("\n\n"),
+              raw(
+                Object.fromEntries(
+                  Object.entries(allCommands).map(([cat, cmds]) => [
+                    cat,
+                    cmds.map((c) => c.name),
+                  ]),
+                ),
+              ),
             );
           await reply.edit({ embeds: [allEmbed] });
           break;
@@ -116,18 +103,9 @@ export default class Help extends Command {
           const selectedCommands = allCommands[selected] || [];
           const categoryEmbed = client
             .embed()
-            .setAuthor({
-              name: `${selected.charAt(0).toUpperCase() + selected.slice(1)}`,
-              iconURL: client.user.displayAvatarURL(),
-            })
             .desc(
               selectedCommands.length
-                ? selectedCommands
-                    .map(
-                      (cmd) =>
-                        `${client.emoji.info1} \`${client.prefix}${cmd.name}\`\n└ ${cmd.description}`,
-                    )
-                    .join("\n\n")
+                ? raw(selectedCommands.map((c) => [c.name, c.description]))
                 : "No commands",
             );
 
@@ -147,3 +125,4 @@ export default class Help extends Command {
     });
   }
 }
+

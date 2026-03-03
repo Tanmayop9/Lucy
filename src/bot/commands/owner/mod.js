@@ -6,6 +6,7 @@
 import _ from "lodash";
 import { paginator } from "../../../lib/utils/paginator.js";
 import { Command } from "../../structures/abstract/command.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class ModManage extends Command {
   constructor() {
@@ -68,17 +69,12 @@ export default class ModManage extends Command {
               }),
           ),
         );
-        const modUsers = users
-          .filter((user) => user)
-          .map(
-            (user, index) => `${index + 1} **${user?.username}** \`[${user?.id}]\``,
-          );
+        const modUsers = users.filter((user) => user);
         const chunked = _.chunk(modUsers, 10);
         const embeds = chunked.map((chunk) =>
           client
             .embed()
-            .setTitle(`${client.emoji.check} Bot Moderators`)
-            .desc(chunk.join("\n")),
+            .desc(raw(chunk.map((u) => [u.username, u.id]))),
         );
         await paginator(ctx, embeds);
         return;
@@ -121,9 +117,7 @@ export default class ModManage extends Command {
             embeds: [
               client
                 .embed()
-                .desc(
-                  `${client.emoji.check} Successfully added \`${target.username}\` as a bot moderator.`,
-                ),
+                .desc(raw({ action: args[0], user: target.username, id: target.id })),
             ],
           });
           break;
@@ -143,9 +137,7 @@ export default class ModManage extends Command {
             embeds: [
               client
                 .embed()
-                .desc(
-                  `${client.emoji.check} Successfully removed \`${target.username}\` from bot moderators.`,
-                ),
+                .desc(raw({ action: args[0], user: target.username, id: target.id })),
             ],
           });
           break;

@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import { Command } from "../../structures/abstract/command.js";
 import { filter } from "../../../lib/utils/filter.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class ServerInfo extends Command {
   constructor() {
@@ -46,7 +47,6 @@ export default class ServerInfo extends Command {
 
     const baseEmbed = client
       .embed()
-      .title(`${client.emoji.info} Server Overview`)
       .desc(`Select a category below to explore in detail.`)
       .footer({ text: `Server ID: ${guild.id}` });
 
@@ -82,59 +82,56 @@ export default class ServerInfo extends Command {
       if (val === "overview") {
         const embed = client
           .embed()
-          .title(`${client.emoji.info} Server Overview`)
           .desc(
-            `**Name:** ${guild.name}\n` +
-              `**Owner:** <@${guild.ownerId}> (${guild.ownerId})\n` +
-              `**Created:** <t:${Math.floor(guild.createdTimestamp / 1000)}:R>\n` +
-              `**Region:** ${guild.preferredLocale || "Unknown"}\n` +
-              `**Description:** ${guild.description || "No description"}`,
+            raw({
+              name: guild.name,
+              owner: guild.ownerId,
+              created: guild.createdTimestamp,
+              region: guild.preferredLocale,
+              description: guild.description,
+            }),
           );
         await msg.edit({ embeds: [embed] });
       } else if (val === "channels") {
         const embed = client
           .embed()
-          .title(`${client.emoji.info} Channel Stats`)
           .desc(
-            `**Text Channels:** ${stats.text}\n` +
-              `**Voice Channels:** ${stats.voice}\n` +
-              `**Categories:** ${stats.categories}\n` +
-              `**Threads:** ${stats.threads}\n` +
-              `**Total Channels:** ${channels.size}`,
+            raw({
+              text: stats.text,
+              voice: stats.voice,
+              categories: stats.categories,
+              threads: stats.threads,
+              total: channels.size,
+            }),
           );
         await msg.edit({ embeds: [embed] });
       } else if (val === "members") {
         const embed = client
           .embed()
-          .title(`${client.emoji.info} Member Breakdown`)
           .desc(
-            `**Total Members:** ${guild.memberCount}\n` +
-              `**Humans:** ${humans}\n` +
-              `**Bots:** ${bots}`,
+            raw({
+              total: guild.memberCount,
+              humans,
+              bots,
+            }),
           );
         await msg.edit({ embeds: [embed] });
       } else if (val === "roles") {
         const embed = client
           .embed()
-          .title(`${client.emoji.info} Server Roles`)
-          .desc(
-            roles.length
-              ? roles.slice(0, 30).join(", ") +
-                  (roles.length > 30 ? ` and ${roles.length - 30} more...` : "")
-              : "No roles found.",
-          )
-          .footer({ text: `Total Roles: ${roles.length}` });
+          .desc(raw(roles.slice(0, 30).map((r) => r.toString())));
         await msg.edit({ embeds: [embed] });
       } else if (val === "security") {
         const embed = client
           .embed()
-          .title(`${client.emoji.info} Security & Boost Details`)
           .desc(
-            `**Verification Level:** ${guild.verificationLevel}\n` +
-              `**Boost Level:** ${guild.premiumTier}\n` +
-              `**Boosts:** ${guild.premiumSubscriptionCount}\n` +
-              `**AFK Timeout:** ${guild.afkTimeout / 60} min\n` +
-              `**AFK Channel:** ${guild.afkChannel ? `<#${guild.afkChannelId}>` : "None"}\n`,
+            raw({
+              verificationLevel: guild.verificationLevel,
+              boostLevel: guild.premiumTier,
+              boosts: guild.premiumSubscriptionCount,
+              afkTimeout: guild.afkTimeout,
+              afkChannel: guild.afkChannelId || null,
+            }),
           );
         await msg.edit({ embeds: [embed] });
       }

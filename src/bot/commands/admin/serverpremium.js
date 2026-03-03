@@ -1,5 +1,6 @@
 import ms from "ms";
 import { Command } from "../../structures/abstract/command.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class PremiumServer extends Command {
   constructor() {
@@ -35,7 +36,7 @@ export default class PremiumServer extends Command {
     ];
 
     this.execute = async (client, ctx, args) => {
-      const { check, cross, info, info1, prem } = client.emoji;
+      const { check, cross, info } = client.emoji;
       const action = args[0]?.toLowerCase();
       const serverId = args[1] || ctx.guild?.id;
       const durationArg = args[2];
@@ -66,17 +67,17 @@ export default class PremiumServer extends Command {
           });
         }
 
-        const serverDetails = await Promise.all(
-          keys.map(async (id, index) => {
+        const serverList = await Promise.all(
+          keys.map(async (id) => {
             const data = await client.db.serverstaff.get(id);
             const server =
               client.guilds.cache.get(id) ||
               (await client.guilds.fetch(id).catch(() => null));
-            const name = server?.name || "Unknown Server";
-            const expires = data?.expires
-              ? `<t:${Math.floor(data.expires / 1000)}:R>`
-              : "`∞`";
-            return `${index + 1}. **${name}** [\`${id}\`] — **Expires:** ${expires}`;
+            return {
+              id,
+              name: server?.name || "Unknown Server",
+              expires: data?.expires || null,
+            };
           }),
         );
 
@@ -84,8 +85,7 @@ export default class PremiumServer extends Command {
           embeds: [
             client
               .embed()
-              .setTitle(`${prem} Premium Servers`)
-              .desc(serverDetails.join("\n")),
+              .desc(raw(serverList.map(({ id, name, expires }) => ({ id, name, expires })))),
           ],
         });
       }
@@ -127,10 +127,7 @@ export default class PremiumServer extends Command {
           embeds: [
             client
               .embed()
-              .title(`${prem} Premium Activated`)
-              .desc(
-                `${check} Server \`${serverId}\` is now premium!\n\n${info1} **Activated By:** <@${ctx.author.id}>\n${info} **Expires:** ${durationMs ? `<t:${Math.floor((now + durationMs) / 1000)}:R>` : "`Never`"}`,
-              ),
+              .desc(raw({ action, serverId, duration: durationArg || null })),
           ],
         });
       }
@@ -152,10 +149,7 @@ export default class PremiumServer extends Command {
           embeds: [
             client
               .embed()
-              .title(`${prem} Premium Removed`)
-              .desc(
-                `${check} Server \`${serverId}\` has been removed from premium.`,
-              ),
+              .desc(raw({ action, serverId })),
           ],
         });
       }

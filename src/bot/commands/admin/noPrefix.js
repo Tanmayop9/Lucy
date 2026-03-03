@@ -6,6 +6,7 @@
 import _ from "lodash";
 import { paginator } from "../../../lib/utils/paginator.js";
 import { Command } from "../../structures/abstract/command.js";
+import { raw } from "../../../lib/utils/raw.js";
 export default class NoPrefix extends Command {
   constructor() {
     super(...arguments);
@@ -67,19 +68,14 @@ export default class NoPrefix extends Command {
             }),
         );
         const users = await Promise.all(promises);
-        const noPrefixUsers = users
-          .filter((user) => user)
-          .map(
-            (user, index) => `${index + 1} **${user?.username}** \`[${user?.id}]\``,
-          );
+        const noPrefixUsers = users.filter((user) => user);
         const chunked = _.chunk(noPrefixUsers, 10);
         const embeds = [];
         for (const chunk of chunked) {
           embeds.push(
             client
               .embed()
-              .setTitle(`${client.emoji.check} No-Prefix user's list`)
-              .desc(chunk.join("\n")),
+              .desc(raw(chunk.map((u) => [u.username, u.id]))),
           );
         }
         await paginator(ctx, embeds);
@@ -117,9 +113,7 @@ export default class NoPrefix extends Command {
               embeds: [
                 client
                   .embed()
-                  .desc(
-                    `${client.emoji.check} Successfully added no prefix privilages to \`${target.username}\`.`,
-                  ),
+                  .desc(raw({ action: args[0], user: target.username, id: target.id })),
               ],
             });
           }
@@ -145,9 +139,7 @@ export default class NoPrefix extends Command {
               embeds: [
                 client
                   .embed()
-                  .desc(
-                    `${client.emoji.check} Successfully removed no prefix privilages from \`${target.username}\`.`,
-                  ),
+                  .desc(raw({ action: args[0], user: target.username, id: target.id })),
               ],
             });
           }

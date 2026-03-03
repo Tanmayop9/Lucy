@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { paginator } from "../../../lib/utils/paginator.js";
 import { Command } from "../../structures/abstract/command.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class Queue extends Command {
   constructor() {
@@ -12,74 +13,26 @@ export default class Queue extends Command {
     this.execute = async (client, ctx) => {
       const player = client.getPlayer(ctx);
       const current = player.queue.current;
-      const previous = player.queue.previous;
       const upcoming = [...player.queue];
 
-      const totalDuration =
-        upcoming.reduce((acc, t) => acc + (t.length || 0), 0) +
-        (current?.length || 0);
-      const totalTracks = previous.length + 1 + upcoming.length;
-
-      const formatTrack = (
-        track,
-        index,
-        isCurrent = false,
-        isPrevious = false,
-      ) => {
-        const duration = track.isStream
-          ? "LIVE"
-          : client.formatDuration(track.length);
-        const title =
-          track.title.length > 38
-            ? track.title.substring(0, 35) + "..."
-            : track.title;
-
-        if (isCurrent) {
-          return `${client.emoji.resume} **${index + 1}. ${title}**\n\`${duration}\``;
-        }
-        if (isPrevious) {
-          return `~~${index + 1}. ${title}~~\n\`${duration}\``;
-        }
-        return `${client.emoji.info1} ${index + 1}. ${title}\n\`${duration}\``;
-      };
-
-      // Build queue list
-      const queueList = [];
-
-      // Previous tracks
-      previous.forEach((track, i) => {
-        queueList.push(formatTrack(track, i, false, true));
-      });
-
-      // Current track
-      if (current) {
-        queueList.push(formatTrack(current, previous.length, true));
-      }
-
-      // Upcoming tracks
-      upcoming.forEach((track, i) => {
-        queueList.push(formatTrack(track, previous.length + 1 + i));
-      });
-
-      const chunked = _.chunk(queueList, 10);
-      const pages = chunked.map((chunk, _pageIndex) =>
-        client
-          .embed()
-          .setAuthor({
-            name: "Queue",
-            iconURL: client.user.displayAvatarURL(),
-          })
-          .setThumbnail(current?.thumbnail || client.user.displayAvatarURL())
-          .desc(
-            `\`${totalTracks} tracks\` • \`${client.formatDuration(totalDuration)}\`\n\n` +
-              chunk.join("\n") +
-              `\n\n\`\`\`\n` +
-              `Loop: ${player.loop || "Off"} • Volume: ${player.volume}%\n` +
-              `\`\`\``,
+      const chunkedUpcoming = _.chunk(upcoming, 10);
+      const pages = (chunkedUpcoming.length > 0 ? chunkedUpcoming : [[]]).map(
+        (upcomingChunk) =>
+          client.embed().desc(
+            raw({
+              context: { textId: player.textId },
+              voice: { guildId: player.guildId, voiceId: player.voiceId },
+              loop: player.loop,
+              volume: player.volume,
+              current: current
+                ? [current.title, current.author, current.length]
+                : null,
+              upcoming: upcomingChunk.map((t) => [t.title, t.author, t.length]),
+            }),
           ),
       );
 
-      await paginator(ctx, pages, Math.floor(previous.length / 8) || 0);
+      await paginator(ctx, pages);
     };
   }
 }

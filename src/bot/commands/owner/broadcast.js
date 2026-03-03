@@ -3,6 +3,7 @@
  * @author Tanmay
  */
 import { Command } from "../../structures/abstract/command.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class Broadcast extends Command {
   constructor() {
@@ -30,17 +31,7 @@ export default class Broadcast extends Command {
 
       const confirmEmbed = client
         .embed()
-        .setAuthor({
-          name: `${client.user.username} - Broadcast Confirmation`,
-          iconURL: client.user.displayAvatarURL(),
-        })
-        .setDescription(
-          `**Broadcast Preview**\n\n` +
-            `${message}\n\n` +
-            `${client.emoji.warn} This will be sent to **${guilds.size}** servers.\n` +
-            `${client.emoji.info} Type \`confirm\` to proceed or \`cancel\` to abort.`,
-        )
-        .setTimestamp();
+        .desc(raw({ preview: message, targets: guilds.size }));
 
       await ctx.reply({ embeds: [confirmEmbed] });
 
@@ -117,12 +108,7 @@ export default class Broadcast extends Command {
         embeds: [
           client
             .embed()
-            .setDescription(
-              `**Broadcast Complete**\n\n` +
-                `${client.emoji.check} Successful: \`${success}\`\n` +
-                `${client.emoji.cross} Failed: \`${failed}\`\n` +
-                `${client.emoji.info} Total: \`${guilds.size}\``,
-            ),
+            .desc(raw({ success, failed, total: guilds.size })),
         ],
       });
     };

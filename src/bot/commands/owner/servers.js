@@ -4,6 +4,7 @@
  */
 import { Command } from "../../structures/abstract/command.js";
 import { paginator } from "../../../lib/utils/paginator.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class Servers extends Command {
   constructor() {
@@ -21,33 +22,9 @@ export default class Servers extends Command {
 
       for (let i = 0; i < guilds.length; i += guildsPerPage) {
         const guildChunk = guilds.slice(i, i + guildsPerPage);
-
-        const description = guildChunk
-          .map((guild, index) => {
-            const owner = guild.ownerId;
-            return (
-              `**${i + index + 1}.** ${guild.name}\n` +
-              `${client.emoji.info} ID: \`${guild.id}\`\n` +
-              `${client.emoji.info} Members: \`${guild.memberCount}\`\n` +
-              `${client.emoji.info} Owner: <@${owner}>\n`
-            );
-          })
-          .join("\n");
-
         const embed = client
           .embed()
-          .setAuthor({
-            name: `${client.user.username} - Server List`,
-            iconURL: client.user.displayAvatarURL(),
-          })
-          .setTitle(`Total Servers: ${guilds.length}`)
-          .setDescription(description)
-          .footer({
-            text: `Page ${Math.floor(i / guildsPerPage) + 1}/${Math.ceil(guilds.length / guildsPerPage)} • Owner Only`,
-            iconURL: ctx.author.displayAvatarURL(),
-          })
-          .setTimestamp();
-
+          .desc(raw(guildChunk.map((g) => [g.name, g.id, g.memberCount])));
         pages.push(embed);
       }
 

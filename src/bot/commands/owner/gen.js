@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { Command } from "../../structures/abstract/command.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class GenRedeem extends Command {
   constructor() {
@@ -72,11 +73,13 @@ export default class GenRedeem extends Command {
           client
             .embed()
             .desc(
-              `${client.emoji.prem} **Redeem Code Generated**\n\n` +
-                `${client.emoji.info1}**Code:** \`${code}\`\n` +
-                `${client.emoji.info1}**Type:** \`${type.toUpperCase()}\`\n` +
-                `${client.emoji.info1}**Duration:** \`${duration} day(s)\`\n\n` +
-                `${client.emoji.info} Use \`${client.prefix}redeem ${code}\` to redeem.`,
+              raw({
+                code,
+                type,
+                duration: `${duration}d`,
+                expiresAt,
+                generatedBy: ctx.author.id,
+              }),
             ),
         ],
       });

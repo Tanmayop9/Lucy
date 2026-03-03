@@ -5,14 +5,13 @@
  */
 import { paginator } from "../../../lib/utils/paginator.js";
 import { Command } from "../../structures/abstract/command.js";
-import { getPrefix } from "../../../lib/utils/getPrefix.js";
+import { raw } from "../../../lib/utils/raw.js";
 export default class Profile extends Command {
   constructor() {
     super(...arguments);
     this.aliases = ["pr"];
     this.description = "Shows user profile";
     this.execute = async (client, ctx) => {
-      const prefix = await getPrefix(client, ctx.guild.id);
       let [
         commandsUsed,
         songsPlayed,
@@ -32,13 +31,10 @@ export default class Profile extends Command {
       commandsUsed ||= 0;
       likedSongs ||= [];
 
-      // Calculate user level based on commands and songs
       const totalActivity = commandsUsed + songsPlayed;
       const level = Math.floor(totalActivity / 50) + 1;
       const nextLevelProgress = totalActivity % 50;
-      const progressBar = this.generateProgressBar(nextLevelProgress, 50);
 
-      // Calculate account age
       const accountAge = Math.floor(
         (Date.now() - ctx.author.createdTimestamp) / (1000 * 60 * 60 * 24),
       );
@@ -63,19 +59,17 @@ export default class Profile extends Command {
         },
       };
       Object.entries(challenges.commands).forEach(([key, { count }]) => {
-        const achievement = key.charAt(0).toUpperCase() + key.slice(1);
         achievements.commands.push(
           commandsUsed >= count
-            ? `${client.emoji.check} **${achievement} :** Complete ( ${count} / ${count} )`
-            : `${client.emoji.info} **${achievement} :** Progress ( ${commandsUsed} / ${count} )`,
+            ? { name: key, status: "complete", progress: count, goal: count }
+            : { name: key, status: "in progress", progress: commandsUsed, goal: count },
         );
       });
       Object.entries(challenges.songsPlayed).forEach(([key, { count }]) => {
-        const achievement = key.charAt(0).toUpperCase() + key.slice(1);
         achievements.songs.push(
           songsPlayed >= count
-            ? `${client.emoji.check} **${achievement} :** Complete ( ${count} / ${count} )`
-            : `${client.emoji.info} **${achievement} :** Progress ( ${songsPlayed} / ${count} )`,
+            ? { name: key, status: "complete", progress: count, goal: count }
+            : { name: key, status: "in progress", progress: songsPlayed, goal: count },
         );
       });
       const badges = [];
@@ -84,151 +78,66 @@ export default class Profile extends Command {
         client.admins.includes(ctx.author.id) ||
         (await client.db.noPrefix.has(ctx.author.id))
       )
-        badges.push(`${client.emoji.check} **No Prefix** (Pay to get it)`);
+        badges.push("No Prefix");
       if (ctx.author.id === "1056087251068649522")
-        badges.push(`${client.emoji.check} **Developer** (Only for me)`);
+        badges.push("Developer");
       if (client.admins.includes(ctx.author.id))
-        badges.push(`${client.emoji.check} **Admin** (Only for bot admins)`);
+        badges.push("Admin");
       if (client.owners.includes(ctx.author.id))
-        badges.push(`${client.emoji.check} **Owner** (Only for bot owners)`);
+        badges.push("Owner");
       for (const [key, value] of Object.entries(challenges.commands))
         if (commandsUsed >= value.count)
-          badges.push(
-            `${value.emoji} **${key[0].toUpperCase() + key.slice(1)}** (Use any command/s ${value.count} times)`,
-          );
+          badges.push(key[0].toUpperCase() + key.slice(1));
       for (const [key, value] of Object.entries(challenges.songsPlayed))
         if (songsPlayed >= value.count)
-          badges.push(
-            `${value.emoji} **${key[0].toUpperCase() + key.slice(1)}** (Listen to any song/s ${value.count} times)`,
-          );
+          badges.push(key[0].toUpperCase() + key.slice(1));
 
-      // Overview Page
       const overviewEmbed = client
         .embed()
-        .setAuthor({
-          name: `${ctx.author.username}'s Profile`,
-          iconURL: ctx.author.displayAvatarURL(),
-        })
-        .setThumbnail(ctx.author.displayAvatarURL({ size: 512 }))
         .desc(
-          `╔══════════════════════════════╗\n` +
-            `║           **OVERVIEW**           ║\n` +
-            `╚══════════════════════════════╝\n\n` +
-            `${client.emoji.info} **Level:** ${level} ${this.getLevelEmoji(level)}\n` +
-            `${client.emoji.info1} Progress: ${progressBar} ${nextLevelProgress}/50\n\n` +
-            `📊 **Statistics:**\n` +
-            `${client.emoji.info1} Commands Used: **${commandsUsed}**\n` +
-            `${client.emoji.info1} Songs Played: **${songsPlayed}**\n` +
-            `${client.emoji.info1} Liked Songs: **${likedSongs.length}**\n\n` +
-            `💎 **Status:**\n` +
-            `${client.emoji.info1} Premium: ${premiumData ? `${client.emoji.check} Active` : `${client.emoji.cross} Inactive`}\n` +
-            `${client.emoji.info1} AFK: ${afkData ? `${client.emoji.check} ${afkData.reason}` : `${client.emoji.cross} No`}\n` +
-            `${client.emoji.info1} Spotify: ${spotifyData ? `${client.emoji.music} Linked` : `${client.emoji.cross} Not Linked`}\n\n` +
-            `📅 **Account Info:**\n` +
-            `${client.emoji.info1} Discord User ID: \`${ctx.author.id}\`\n` +
-            `${client.emoji.info1} Account Age: **${accountAge} days**\n` +
-            `${client.emoji.info1} Joined Discord: <t:${Math.floor(ctx.author.createdTimestamp / 1000)}:R>`,
-        )
-        .setFooter({ text: `Page 1/4 • ${ctx.author.username}` })
-        .setTimestamp();
+          raw({
+            level,
+            progress: `${nextLevelProgress}/50`,
+            stats: {
+              commandsUsed,
+              songsPlayed,
+              likedSongs: likedSongs.length,
+            },
+            status: {
+              premium: !!premiumData,
+              afk: afkData?.reason || null,
+              spotify: !!spotifyData,
+            },
+            account: {
+              id: ctx.author.id,
+              age: `${accountAge} days`,
+            },
+          }),
+        );
 
       const badgesEmbed = client
         .embed()
-        .setAuthor({
-          name: `${ctx.author.username}'s Badges`,
-          iconURL: ctx.author.displayAvatarURL(),
-        })
-        .setThumbnail(ctx.author.displayAvatarURL({ size: 512 }))
-        .desc(
-          `╔══════════════════════════════╗\n` +
-            `║            **BADGES**            ║\n` +
-            `╚══════════════════════════════╝\n\n` +
-            (badges.length
-              ? badges.join("\n\n")
-              : `${client.emoji.warn} **No badges yet!**\n\n` +
-                `${client.emoji.info} Complete achievements to earn badges!\n` +
-                `${client.emoji.info} Check the Achievements page to see your progress.`),
-        )
-        .setFooter({ text: `Page 2/4 • Total Badges: ${badges.length}` })
-        .setTimestamp();
+        .desc(raw({ badges }));
 
       const achievementsEmbed = client
         .embed()
-        .setAuthor({
-          name: `${ctx.author.username}'s Achievements`,
-          iconURL: ctx.author.displayAvatarURL(),
-        })
-        .setThumbnail(ctx.author.displayAvatarURL({ size: 512 }))
-        .desc(
-          `╔══════════════════════════════╗\n` +
-            `║        **ACHIEVEMENTS**       ║\n` +
-            `╚══════════════════════════════╝\n\n` +
-            Object.entries(achievements)
-              .map(
-                ([key, value]) =>
-                  `**${key === "commands" ? `${client.emoji.check} Commands` : `${client.emoji.music} Songs`} Achievements:**\n` +
-                  `${value.join("\n")}`,
-              )
-              .join("\n\n"),
-        )
-        .setFooter({ text: `Page 3/4 • Keep grinding!` })
-        .setTimestamp();
-
-      // Music & Spotify Page
-      let musicDesc =
-        `╔══════════════════════════════╗\n` +
-        `║       **MUSIC & SPOTIFY**     ║\n` +
-        `╚══════════════════════════════╝\n\n`;
-
-      if (spotifyData) {
-        const linkedDate = new Date(spotifyData.linkedAt).toLocaleDateString(
-          "en-US",
-          {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          },
-        );
-        musicDesc +=
-          `${client.emoji.music} **Spotify Connected**\n` +
-          `${client.emoji.info1} Username: **${spotifyData.username}**\n` +
-          `${client.emoji.info1} Profile: [View Profile](${spotifyData.profileUrl})\n` +
-          `${client.emoji.info1} Linked Since: ${linkedDate}\n\n`;
-      } else {
-        musicDesc +=
-          `${client.emoji.music} **Spotify Not Connected**\n` +
-          `${client.emoji.info1} Link: \`${prefix}spotify login <url>\`\n\n`;
-      }
-
-      musicDesc += `${client.emoji.heart} **Liked Songs**\n`;
-      if (likedSongs.length > 0) {
-        musicDesc += `${client.emoji.info1} Total Liked: **${likedSongs.length} songs**\n`;
-
-        // Show top 5 most recently liked songs
-        const recentLikes = likedSongs.slice(-5).reverse();
-        musicDesc += `${client.emoji.info1} Recent Likes:\n`;
-        recentLikes.forEach((song, index) => {
-          musicDesc += `  **${index + 1}.** ${song.title}\n`;
-        });
-
-        musicDesc += `\n${client.emoji.info} Use \`${prefix}showliked\` to see all!\n`;
-        musicDesc += `${client.emoji.info} Use \`${prefix}playliked\` to play them!\n`;
-      } else {
-        musicDesc +=
-          `${client.emoji.info1} No liked songs yet!\n` +
-          `${client.emoji.info} Use \`${prefix}like\` while playing a song to add it!\n`;
-      }
+        .desc(raw({ achievements }));
 
       const musicEmbed = client
         .embed()
-        .setAuthor({
-          name: `${ctx.author.username}'s Music`,
-          iconURL: ctx.author.displayAvatarURL(),
-        })
-        .setThumbnail(ctx.author.displayAvatarURL({ size: 512 }))
-        .desc(musicDesc)
-        .setFooter({ text: `Page 4/4 • Keep vibing!` })
-        .setTimestamp();
+        .desc(
+          raw({
+            spotify: spotifyData
+              ? {
+                  username: spotifyData.username,
+                  profileUrl: spotifyData.profileUrl,
+                  linkedAt: spotifyData.linkedAt,
+                }
+              : null,
+            likedSongs: likedSongs.length,
+            recentLikes: likedSongs.slice(-5).reverse().map((s) => s.title),
+          }),
+        );
 
       await paginator(ctx, [
         overviewEmbed,

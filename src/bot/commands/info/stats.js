@@ -5,6 +5,7 @@
  */
 import { Command } from "../../structures/abstract/command.js";
 import { paginator } from "../../../lib/utils/paginator.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class Stats extends Command {
   constructor() {
@@ -29,29 +30,17 @@ export default class Stats extends Command {
 
     const generalStatsEmbed = client
       .embed()
-      .setAuthor({
-        name: `${client.user.username} Statistics`,
-        iconURL: client.user.displayAvatarURL(),
-      })
-      .setThumbnail(client.user.displayAvatarURL())
       .desc(
-        `**Network**\n` +
-          `Servers: **${client.guilds.cache.size.toLocaleString()}**\n` +
-          `Users: **${totalUsers.toLocaleString()}**\n\n` +
-          `**Performance**\n` +
-          `Uptime: **${client.formatDuration(client.uptime)}**\n` +
-          `Latency: **${client.ws.ping}ms**\n\n` +
-          `**Memory**\n` +
-          `Heap Used: **${client.formatBytes(process.memoryUsage().heapUsed)}**\n` +
-          `Heap Total: **${client.formatBytes(process.memoryUsage().heapTotal)}**\n\n` +
-          `**Music**\n` +
-          `Active Players: **${activePlayers}**`,
-      )
-      .footer({
-        text: `Page 1/3 | Requested by ${ctx.author.username}`,
-        iconURL: ctx.author.displayAvatarURL(),
-      })
-      .setTimestamp();
+        raw({
+          servers: client.guilds.cache.size,
+          users: totalUsers,
+          uptime: client.formatDuration(client.uptime),
+          latency: `${client.ws.ping}ms`,
+          heapUsed: client.formatBytes(process.memoryUsage().heapUsed),
+          heapTotal: client.formatBytes(process.memoryUsage().heapTotal),
+          activePlayers,
+        }),
+      );
 
     const shardInfo = await client.cluster.broadcastEval((c) => ({
       id: c.ws.shards.first()?.id ?? 0,
@@ -62,56 +51,30 @@ export default class Stats extends Command {
 
     const shardInfoEmbed = client
       .embed()
-      .setAuthor({
-        name: `${client.user.username} Shard Info`,
-        iconURL: client.user.displayAvatarURL(),
-      })
-      .setThumbnail(client.user.displayAvatarURL())
       .desc(
-        `**Shards:** ${shardCount}\n\n` +
-          (shardInfo.length > 0
-            ? shardInfo
-                .map(
-                  (shard) =>
-                    `**Shard ${shard.id}**\n` +
-                    `Servers: **${shard.guilds.toLocaleString()}**\n` +
-                    `Latency: **${shard.ping}ms**\n` +
-                    `Status: **${shard.status === 0 ? "Online" : "Connecting"}**`,
-                )
-                .join("\n\n")
-            : `Shard details unavailable.`),
-      )
-      .footer({
-        text: `Page 2/3 | Total Shards: ${shardInfo.length}`,
-        iconURL: ctx.author.displayAvatarURL(),
-      })
-      .setTimestamp();
+        raw(
+          shardInfo.map((s) => [
+            s.status === 0 ? "ready" : "connecting",
+            `shard-${s.id}`,
+            s.ping,
+          ]),
+        ),
+      );
 
     const systemInfoEmbed = client
       .embed()
-      .setAuthor({
-        name: `${client.user.username} System Info`,
-        iconURL: client.user.displayAvatarURL(),
-      })
-      .setThumbnail(client.user.displayAvatarURL())
       .desc(
-        `**Hardware**\n` +
-          `CPU Usage: **${(_cpuUsage * 100).toFixed(2)}%**\n` +
-          `RSS Memory: **${client.formatBytes(process.memoryUsage().rss)}**\n` +
-          `Platform: **${process.platform}** (${process.arch})\n\n` +
-          `**Software**\n` +
-          `Node.js: **${process.version}**\n` +
-          `Discord.js: **v14.15.2**\n\n` +
-          `**Bot**\n` +
-          `Commands: **${client.commands.size}**\n` +
-          `Event Listeners: **${client.eventNames().length}**\n` +
-          `PID: **${process.pid}**`,
-      )
-      .footer({
-        text: `Page 3/3 | Version: v1.0.0`,
-        iconURL: ctx.author.displayAvatarURL(),
-      })
-      .setTimestamp();
+        raw({
+          cpuUsage: `${(_cpuUsage * 100).toFixed(2)}%`,
+          rss: client.formatBytes(process.memoryUsage().rss),
+          platform: `${process.platform} (${process.arch})`,
+          node: process.version,
+          discordjs: "v14.15.2",
+          commands: client.commands.size,
+          eventListeners: client.eventNames().length,
+          pid: process.pid,
+        }),
+      );
 
     return [generalStatsEmbed, shardInfoEmbed, systemInfoEmbed];
   }

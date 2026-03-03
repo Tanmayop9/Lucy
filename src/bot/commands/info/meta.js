@@ -6,6 +6,7 @@ import _ from "lodash";
 import { Command } from "../../structures/abstract/command.js";
 import { paginator } from "../../../lib/utils/paginator.js";
 import { getCodeStats } from "../../../lib/utils/codestats.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class CodeStats extends Command {
   constructor() {
@@ -22,21 +23,17 @@ export default class CodeStats extends Command {
 
       const stats = await getCodeStats();
 
-      const info = [
-        `**Codebase Overview**\n`,
-        `**Structure**`,
-        `${client.emoji.info} Total Files: \`${stats.files}\``,
-        `${client.emoji.info} Directories: \`${stats.directories}\`\n`,
-        `**Code Metrics**`,
-        `${client.emoji.info} Total Lines: \`${stats.lines.toLocaleString()}\``,
-        `${client.emoji.info} Characters: \`${stats.characters.toLocaleString()}\``,
-        `${client.emoji.info} Whitespaces: \`${stats.whitespaces.toLocaleString()}\`\n`,
-        `**Statistics**`,
-        `${client.emoji.info} Avg Lines/File: \`${Math.floor(stats.lines / stats.files)}\``,
-        `${client.emoji.info} Total Size: \`${(stats.characters / 1024 / 1024).toFixed(2)} MB\``,
+      const embeds = [
+        client.embed().desc(
+          raw({
+            files: stats.files,
+            directories: stats.directories,
+            lines: stats.lines,
+            characters: stats.characters,
+            avgLinesPerFile: Math.floor(stats.lines / stats.files),
+          }),
+        ),
       ];
-
-      const embeds = [client.embed().desc(info.join("\n"))];
 
       const treeChunks = _.chunk(stats.tree, 20);
       for (const chunk of treeChunks) {

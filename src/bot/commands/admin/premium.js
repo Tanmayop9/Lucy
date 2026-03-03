@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { paginator } from "../../../lib/utils/paginator.js";
 import { Command } from "../../structures/abstract/command.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class StaffManage extends Command {
   constructor() {
@@ -36,7 +37,7 @@ export default class StaffManage extends Command {
     ];
 
     this.execute = async (client, ctx, args) => {
-      const { prem, check, cross, info, info1 } = client.emoji;
+      const { cross, info, info1 } = client.emoji;
       const action = args[0]?.toLowerCase();
 
       if (!["add", "remove", "list"].includes(action)) {
@@ -72,20 +73,24 @@ export default class StaffManage extends Command {
           }),
         );
 
-        const list = users.filter(Boolean).map(({ user, data }, i) => {
-          const days = Math.max(
-            0,
-            Math.floor((data.expiresAt - Date.now()) / 86400000),
-          );
-          return `${i + 1}. **${user.username}** \`[${user.id}]\`\n${info1} \`${days}\` day(s) left | Added by: <@${data.addedBy}>`;
-        });
+        const list = users.filter(Boolean);
 
-        const pages = _.chunk(list, 6).map((chunk, i) =>
+        const pages = _.chunk(list, 6).map((chunk) =>
           client
             .embed()
-            .setTitle(`${prem} Premium Subscribers`)
-            .setFooter({ text: `Page ${i + 1}/${Math.ceil(list.length / 6)}` })
-            .desc(chunk.join("\n\n")),
+            .desc(
+              raw(
+                chunk.map(({ user, data }) => ({
+                  user: user.username,
+                  id: user.id,
+                  daysLeft: Math.max(
+                    0,
+                    Math.floor((data.expiresAt - Date.now()) / 86400000),
+                  ),
+                  addedBy: data.addedBy,
+                })),
+              ),
+            ),
         );
 
         return paginator(ctx, pages);
@@ -139,7 +144,7 @@ export default class StaffManage extends Command {
             client
               .embed()
               .desc(
-                `${check} \`${userArg.username}\` is now a premium user for \`${duration}\` day(s).`,
+                raw({ action, user: userArg.username, id: userArg.id, duration }),
               ),
           ],
         });
@@ -164,7 +169,7 @@ export default class StaffManage extends Command {
             client
               .embed()
               .desc(
-                `${check} Successfully removed \`${userArg.username}\` from premium.`,
+                raw({ action, user: userArg.username, id: userArg.id, duration: null }),
               ),
           ],
         });

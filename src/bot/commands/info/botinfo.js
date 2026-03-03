@@ -3,6 +3,7 @@ import os from "os";
 import moment from "moment";
 import { Command } from "../../structures/abstract/command.js";
 import { filter } from "../../../lib/utils/filter.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class BotInfo extends Command {
   constructor() {
@@ -32,20 +33,15 @@ export default class BotInfo extends Command {
 
     const embed = client
       .embed()
-      .setAuthor({
-        name: client.user.username,
-        iconURL: client.user.displayAvatarURL(),
-      })
-      .setThumbnail(client.user.displayAvatarURL())
       .desc(
-        `\`\`\`yml\n` +
-          `Servers: ${totalGuilds.toLocaleString()}\n` +
-          `Users: ${totalUsers.toLocaleString()}\n` +
-          `Shards: ${shardCount}\n` +
-          `Players: ${activePlayers}\n` +
-          `Uptime: ${uptime}\n` +
-          `Ping: ${ping}ms\n` +
-          `\`\`\``,
+        raw({
+          servers: totalGuilds,
+          users: totalUsers,
+          shards: shardCount,
+          players: activePlayers,
+          uptime,
+          ping,
+        }),
       );
 
     const menu = new StringSelectMenuBuilder()
@@ -94,73 +90,52 @@ export default class BotInfo extends Command {
       if (choice === "overview") {
         updatedEmbed = client
           .embed()
-          .setAuthor({
-            name: "Overview",
-            iconURL: client.user.displayAvatarURL(),
-          })
-          .setThumbnail(client.user.displayAvatarURL())
           .desc(
-            `\`\`\`yml\n` +
-              `Servers: ${totalGuilds.toLocaleString()}\n` +
-              `Users: ${totalUsers.toLocaleString()}\n` +
-              `Shards: ${shardCount}\n` +
-              `Players: ${activePlayers}\n` +
-              `Uptime: ${uptime}\n` +
-              `Ping: ${ping}ms\n` +
-              `Prefix: ${client.prefix}\n` +
-              `Channels: ${totalChannels.toLocaleString()}\n` +
-              `\`\`\``,
+            raw({
+              servers: totalGuilds,
+              users: totalUsers,
+              shards: shardCount,
+              players: activePlayers,
+              uptime,
+              ping,
+              prefix: client.prefix,
+              channels: totalChannels,
+            }),
           );
       } else if (choice === "system") {
         updatedEmbed = client
           .embed()
-          .setAuthor({
-            name: "System",
-            iconURL: client.user.displayAvatarURL(),
-          })
-          .setThumbnail(client.user.displayAvatarURL())
           .desc(
-            `\`\`\`yml\n` +
-              `CPU: ${cpuModel.substring(0, 40)}\n` +
-              `Memory: ${memoryUsage} MB\n` +
-              `Platform: ${platform}\n` +
-              `Architecture: ${architecture}\n` +
-              `Node.js: ${nodeVersion}\n` +
-              `\`\`\``,
+            raw({
+              cpu: cpuModel.substring(0, 40),
+              memory: `${memoryUsage} MB`,
+              platform,
+              architecture,
+              nodeVersion,
+            }),
           );
       } else if (choice === "developer") {
         updatedEmbed = client
           .embed()
-          .setAuthor({
-            name: "Developer",
-            iconURL: client.user.displayAvatarURL(),
-          })
-          .setThumbnail(client.user.displayAvatarURL())
           .desc(
-            `\`\`\`yml\n` +
-              `Team: NeroX Studios\n` +
-              `Version: 1.0.0\n` +
-              `Framework: Discord.js v14\n` +
-              `Database: MongoDB\n` +
-              `\`\`\`\n` +
-              `**[Support Server](https://discord.gg/duM4dkbz9N)**`,
+            raw({
+              team: "NeroX Studios",
+              version: "1.0.0",
+              framework: "Discord.js v14",
+              database: "MongoDB",
+            }),
           );
       } else if (choice === "stats") {
         updatedEmbed = client
           .embed()
-          .setAuthor({
-            name: "Statistics",
-            iconURL: client.user.displayAvatarURL(),
-          })
-          .setThumbnail(client.user.displayAvatarURL())
           .desc(
-            `\`\`\`yml\n` +
-              `Commands: ${commandsCount}\n` +
-              `Shard: 0/${shardCount}\n` +
-              `Latency: ${ping}ms\n` +
-              `Cache: ${client.users.cache.size} users\n` +
-              `Active: ${activePlayers} players\n` +
-              `\`\`\``,
+            raw({
+              commands: commandsCount,
+              shard: `0/${shardCount}`,
+              latency: `${ping}ms`,
+              cache: client.users.cache.size,
+              active: activePlayers,
+            }),
           );
       }
 

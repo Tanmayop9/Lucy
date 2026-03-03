@@ -1,6 +1,6 @@
 import { Command } from "../../structures/abstract/command.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { getPrefix } from "../../../lib/utils/getPrefix.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class ShowLiked extends Command {
   constructor() {
@@ -10,7 +10,6 @@ export default class ShowLiked extends Command {
   }
 
   execute = async (client, ctx) => {
-    const prefix = await getPrefix(client, ctx.guild.id);
     const likedSongs = (await client.db.likedSongs.get(ctx.author.id)) || [];
 
     if (likedSongs.length === 0) {
@@ -20,7 +19,7 @@ export default class ShowLiked extends Command {
             .embed()
             .desc(
               `${client.emoji.cross} **No Liked Songs!**\n\n` +
-                `${client.emoji.info1} Use \`${prefix}like\` while a song is playing to add it to your liked songs!`,
+                `${client.emoji.info1} Use \`like\` while a song is playing to add it to your liked songs!`,
             ),
         ],
       });
@@ -36,17 +35,9 @@ export default class ShowLiked extends Command {
       const end = start + itemsPerPage;
       const pageSongs = likedSongs.slice(start, end);
 
-      let description = `${client.emoji.info} **Your Liked Songs** (${likedSongs.length} total)\n\n`;
-
-      pageSongs.forEach((song, index) => {
-        const position = start + index + 1;
-        const duration = client.formatDuration(song.length);
-        description += `**${position}.** \`${song.title}\` by \`${song.author}\` - \`${duration}\`\n`;
-      });
-
-      description += `\n${client.emoji.info1} Page ${page + 1} of ${totalPages}`;
-
-      return client.embed().desc(description);
+      return client
+        .embed()
+        .desc(raw(pageSongs.map((s) => [s.title, s.author, client.formatDuration(s.length)])));
     };
 
     const generateButtons = (page) => {

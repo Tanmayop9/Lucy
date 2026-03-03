@@ -6,6 +6,7 @@
 
 import { Command } from "../../structures/abstract/command.js";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class Avatar extends Command {
   constructor() {
@@ -24,14 +25,10 @@ export default class Avatar extends Command {
       ? member.displayAvatarURL({ forceStatic: false, size: 4096 })
       : null;
 
-    // Send embed with default: user avatar
     const embed = client
       .embed()
-      .title(`${target.username}'s Avatar`)
-      .img(userAvatar)
-      .desc(`[Open in browser](${userAvatar})`);
+      .desc(raw({ user: userAvatar, server: serverAvatar || null }));
 
-    // Buttons if server avatar is available and different
     if (serverAvatar && userAvatar !== serverAvatar) {
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -58,9 +55,7 @@ export default class Avatar extends Command {
             embeds: [
               client
                 .embed()
-                .title(`${target.username}'s Avatar`)
-                .img(userAvatar)
-                .desc(`[Open in browser](${userAvatar})`),
+                .desc(raw({ user: userAvatar, server: serverAvatar || null })),
             ],
           });
         } else if (type === "server_avatar") {
@@ -68,9 +63,7 @@ export default class Avatar extends Command {
             embeds: [
               client
                 .embed()
-                .title(`${target.username}'s Server Avatar`)
-                .img(serverAvatar)
-                .desc(`[Open in browser](${serverAvatar})`),
+                .desc(raw({ user: userAvatar, server: serverAvatar })),
             ],
           });
         }
@@ -80,7 +73,6 @@ export default class Avatar extends Command {
         msg.edit({ components: [] }).catch(() => {});
       });
     } else {
-      // No server avatar or same image
       await ctx.reply({ embeds: [embed] });
     }
   };

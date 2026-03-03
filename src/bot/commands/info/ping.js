@@ -5,6 +5,7 @@
  */
 
 import { Command } from "../../structures/abstract/command.js";
+import { raw } from "../../../lib/utils/raw.js";
 
 export default class Ping extends Command {
   constructor() {
@@ -29,19 +30,13 @@ export default class Ping extends Command {
 
     const embed = client
       .embed()
-      .setAuthor({
-        name: `${client.user.username} - Latency`,
-        iconURL: client.user.displayAvatarURL(),
-      })
       .desc(
-        `**WebSocket:** ${wsLatency}ms\n` +
-          `**Database:** ${dbLatency}ms\n` +
-          `**Message:** ${msgLatency}ms`,
-      )
-      .footer({
-        text: `Requested by ${ctx.author.username}`,
-        iconURL: ctx.author.displayAvatarURL(),
-      });
+        raw({
+          ws: `${wsLatency}ms`,
+          db: `${dbLatency}ms`,
+          msg: `${msgLatency}ms`,
+        }),
+      );
 
     await msg.edit({ content: null, embeds: [embed] });
   };

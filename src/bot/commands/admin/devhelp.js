@@ -4,6 +4,7 @@
  * @copyright 2024 1sT - Services | CC BY-NC-SA 4.0
  */
 import { Command } from "../../structures/abstract/command.js";
+import { raw } from "../../../lib/utils/raw.js";
 export default class Commands extends Command {
   constructor() {
     super(...arguments);
@@ -26,13 +27,14 @@ export default class Commands extends Command {
       await ctx.reply({
         embeds: [
           client.embed().desc(
-            Object.entries(allCommands)
-              .sort((b, a) => b[0].length - a[0].length)
-              .map(
-                ([category, commands]) =>
-                  `${client.emoji.check} **${category.charAt(0).toUpperCase() + category.slice(1)} commands : **\n${commands.map((cmd) => `\`${cmd.name}\``).join(", ")}`,
-              )
-              .join("\n\n"),
+            raw(
+              Object.fromEntries(
+                Object.entries(allCommands).map(([cat, cmds]) => [
+                  cat,
+                  cmds.map((c) => c.name),
+                ]),
+              ),
+            ),
           ),
         ],
       });
