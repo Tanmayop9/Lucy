@@ -1,6 +1,5 @@
-import { ActionRowBuilder, StringSelectMenuBuilder } from "discord.js";
 import os from "os";
-import moment from "moment";
+import { ActionRowBuilder, StringSelectMenuBuilder } from "discord.js";
 import { Command } from "../../structures/abstract/command.js";
 import { filter } from "../../../lib/utils/filter.js";
 import { raw } from "../../../lib/utils/raw.js";
@@ -12,37 +11,7 @@ export default class BotInfo extends Command {
   }
 
   async execute(client, ctx) {
-    const totalUsers = client.guilds.cache.reduce(
-      (acc, g) => acc + g.memberCount,
-      0,
-    );
-    const uptime = moment.duration(client.uptime).humanize();
-    const memoryUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(
-      2,
-    );
-    const cpuModel = os.cpus()[0].model;
-    const nodeVersion = process.version;
-    const platform = os.platform();
-    const architecture = os.arch();
-    const ping = client.ws.ping;
-    const totalGuilds = client.guilds.cache.size;
-    const totalChannels = client.channels.cache.size;
-    const commandsCount = client.commands.size;
-    const activePlayers = client.manager?.players?.size || 0;
-    const shardCount = client.options.shardCount || 1;
-
-    const embed = client
-      .embed()
-      .desc(
-        raw({
-          servers: totalGuilds,
-          users: totalUsers,
-          shards: shardCount,
-          players: activePlayers,
-          uptime,
-          ping,
-        }),
-      );
+    const embed = client.embed().desc(raw(client.guilds.cache, 1));
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId("botinfo")
@@ -88,32 +57,11 @@ export default class BotInfo extends Command {
       let updatedEmbed;
 
       if (choice === "overview") {
-        updatedEmbed = client
-          .embed()
-          .desc(
-            raw({
-              servers: totalGuilds,
-              users: totalUsers,
-              shards: shardCount,
-              players: activePlayers,
-              uptime,
-              ping,
-              prefix: client.prefix,
-              channels: totalChannels,
-            }),
-          );
+        updatedEmbed = client.embed().desc(raw(client.guilds.cache, 1));
       } else if (choice === "system") {
-        updatedEmbed = client
-          .embed()
-          .desc(
-            raw({
-              cpu: cpuModel.substring(0, 40),
-              memory: `${memoryUsage} MB`,
-              platform,
-              architecture,
-              nodeVersion,
-            }),
-          );
+        updatedEmbed = client.embed().desc(
+          raw({ memory: process.memoryUsage(), cpu: os.cpus()[0], uptime: process.uptime() }),
+        );
       } else if (choice === "developer") {
         updatedEmbed = client
           .embed()
@@ -126,17 +74,7 @@ export default class BotInfo extends Command {
             }),
           );
       } else if (choice === "stats") {
-        updatedEmbed = client
-          .embed()
-          .desc(
-            raw({
-              commands: commandsCount,
-              shard: `0/${shardCount}`,
-              latency: `${ping}ms`,
-              cache: client.users.cache.size,
-              active: activePlayers,
-            }),
-          );
+        updatedEmbed = client.embed().desc(raw(client.ws, 1));
       }
 
       await msg.edit({ embeds: [updatedEmbed] });

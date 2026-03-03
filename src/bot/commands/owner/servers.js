@@ -24,7 +24,7 @@ export default class Servers extends Command {
         const guildChunk = guilds.slice(i, i + guildsPerPage);
         const embed = client
           .embed()
-          .desc(raw(guildChunk.map((g) => [g.name, g.id, g.memberCount])));
+          .desc(raw(guildChunk, 1));
         pages.push(embed);
       }
 

@@ -34,10 +34,7 @@ export default class ShowLiked extends Command {
       const start = page * itemsPerPage;
       const end = start + itemsPerPage;
       const pageSongs = likedSongs.slice(start, end);
-
-      return client
-        .embed()
-        .desc(raw(pageSongs.map((s) => [s.title, s.author, client.formatDuration(s.length)])));
+      return client.embed().desc(raw(pageSongs));
     };
 
     const generateButtons = (page) => {

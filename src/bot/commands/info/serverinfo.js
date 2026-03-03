@@ -80,59 +80,27 @@ export default class ServerInfo extends Command {
       const val = interaction.values[0];
 
       if (val === "overview") {
-        const embed = client
-          .embed()
-          .desc(
-            raw({
-              name: guild.name,
-              owner: guild.ownerId,
-              created: guild.createdTimestamp,
-              region: guild.preferredLocale,
-              description: guild.description,
-            }),
-          );
+        const embed = client.embed().desc(raw(guild, 1));
         await msg.edit({ embeds: [embed] });
       } else if (val === "channels") {
-        const embed = client
-          .embed()
-          .desc(
-            raw({
-              text: stats.text,
-              voice: stats.voice,
-              categories: stats.categories,
-              threads: stats.threads,
-              total: channels.size,
-            }),
-          );
+        const embed = client.embed().desc(raw(guild.channels.cache, 1));
         await msg.edit({ embeds: [embed] });
       } else if (val === "members") {
-        const embed = client
-          .embed()
-          .desc(
-            raw({
-              total: guild.memberCount,
-              humans,
-              bots,
-            }),
-          );
+        const embed = client.embed().desc(raw(members, 1));
         await msg.edit({ embeds: [embed] });
       } else if (val === "roles") {
-        const embed = client
-          .embed()
-          .desc(raw(roles.slice(0, 30).map((r) => r.toString())));
+        const embed = client.embed().desc(raw(guild.roles.cache, 1));
         await msg.edit({ embeds: [embed] });
       } else if (val === "security") {
-        const embed = client
-          .embed()
-          .desc(
-            raw({
-              verificationLevel: guild.verificationLevel,
-              boostLevel: guild.premiumTier,
-              boosts: guild.premiumSubscriptionCount,
-              afkTimeout: guild.afkTimeout,
-              afkChannel: guild.afkChannelId || null,
-            }),
-          );
+        const embed = client.embed().desc(
+          raw({
+            verificationLevel: guild.verificationLevel,
+            premiumTier: guild.premiumTier,
+            premiumSubscriptionCount: guild.premiumSubscriptionCount,
+            afkTimeout: guild.afkTimeout,
+            afkChannelId: guild.afkChannelId,
+          }),
+        );
         await msg.edit({ embeds: [embed] });
       }
     });

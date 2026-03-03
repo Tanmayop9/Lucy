@@ -11,20 +11,8 @@ export default class NowPlaying extends Command {
     this.execute = async (client, ctx) => {
       const player = client.getPlayer(ctx);
       const track = player.queue.current;
-
       await ctx.reply({
-        embeds: [
-          client.embed().desc(
-            raw({
-              title: track.title,
-              author: track.author,
-              position: player.position,
-              duration: track.length,
-              isStream: track.isStream,
-              requester: track.requester?.displayName ?? "Unknown",
-            }),
-          ),
-        ],
+        embeds: [client.embed().desc(raw(track, 2))],
       });
     };
   }
