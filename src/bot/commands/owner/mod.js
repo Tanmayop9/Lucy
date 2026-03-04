@@ -36,7 +36,7 @@ export default class ModManage extends Command {
 
     this.execute = async (client, ctx, args) => {
       if (!["add", "remove", "list"].includes(args[0]?.toLowerCase())) {
-        ctx.reply({
+        await ctx.reply({
           embeds: [
             client
               .embed()
@@ -49,7 +49,7 @@ export default class ModManage extends Command {
       if (args[0].toLowerCase() === "list") {
         const keys = await ctx.client.db.botmods.keys;
         if (!keys.length) {
-          ctx.reply({
+          await ctx.reply({
             embeds: [
               client.embed().desc(`${client.emoji.cross} No moderators found.`),
             ],
@@ -84,7 +84,7 @@ export default class ModManage extends Command {
         ? ctx.mentions.users?.first()
         : await client.users.fetch(args[1]).catch(() => {});
       if (!target) {
-        ctx.reply({
+        await ctx.reply({
           embeds: [
             client
               .embed()
@@ -98,7 +98,7 @@ export default class ModManage extends Command {
       switch (args[0].toLowerCase()) {
         case "add":
           if (status) {
-            ctx.reply({
+            await ctx.reply({
               embeds: [
                 client
                   .embed()
@@ -123,7 +123,7 @@ export default class ModManage extends Command {
           break;
         case "remove":
           if (!status) {
-            ctx.reply({
+            await ctx.reply({
               embeds: [
                 client
                   .embed()

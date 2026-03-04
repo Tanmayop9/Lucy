@@ -81,7 +81,6 @@ export class ExtendedClient extends Client {
       prefix: josh("prefix"), // Guild-specific prefixes
       afk: josh("afk"), // AFK status
       spotify: josh("spotify"), // Spotify user data
-      likedSongs: josh("likedSongs"), // User liked songs
       userPreferences: josh("userPreferences"), // User preferences (search engine, etc.)
 
       stats: {

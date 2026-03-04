@@ -1,6 +1,6 @@
 import { connect247 } from "../../../lib/services/connect247.js";
 const event = "playerDestroy";
-export default class PlayerDetsroy {
+export default class PlayerDestroy {
   constructor() {
     this.name = event;
   }
