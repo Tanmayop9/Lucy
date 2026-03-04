@@ -19,8 +19,8 @@
   ],
   "defaultSearchEngine": "youtube",
   "spotifyConfig": {
-    "clientId": "d62dc6e25a374aad8f035111f351ea85",
-    "clientSecret": "c807e75e805d4001be9fd81e4afd6272",
+    "clientId": "YOUR_SPOTIFY_CLIENT_ID",
+    "clientSecret": "YOUR_SPOTIFY_CLIENT_SECRET",
     "searchLimit": 10,
     "albumPageLimit": 1,
     "searchMarket": "IN",

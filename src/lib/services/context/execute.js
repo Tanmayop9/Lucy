@@ -56,7 +56,7 @@ export const execute = async (ctx, command, args) => {
         })
         .catch((err) => console.error("Failed to send command log:", err));
     } else {
-      console.error("Webhook cmdLogs is undefined!");
+      console.error("Webhook logs is undefined!");
     }
   } catch (err) {
     console.error(

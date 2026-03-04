@@ -91,19 +91,21 @@ export default class PlayerStart {
       console.error("Error updating song stats:", err);
     }
 
-    await client.webhooks.playerLogs.send({
-      username: `Player-logs`,
-      avatarURL: `${client.user?.displayAvatarURL()}`,
-      embeds: [
-        client
-          .embed()
-          .desc(
-            `${client.emoji.info} **[${moment().tz("Asia/Kolkata")}]** Started playing \`${track.title.substring(0, 30)}\` ` +
-              `in guild named \`${client.guilds.cache.get(player.guildId)?.name.substring(0, 20)}\` (${player.guildId}). ` +
-              `Track requested by \`${track.requester?.tag}\`.`,
-          ),
-      ],
-    });
+    if (client.webhooks?.playerLogs) {
+      await client.webhooks.playerLogs.send({
+        username: `Player-logs`,
+        avatarURL: `${client.user?.displayAvatarURL()}`,
+        embeds: [
+          client
+            .embed()
+            .desc(
+              `${client.emoji.info} **[${moment().tz("Asia/Kolkata")}]** Started playing \`${track.title.substring(0, 30)}\` ` +
+                `in guild named \`${client.guilds.cache.get(player.guildId)?.name.substring(0, 20)}\` (${player.guildId}). ` +
+                `Track requested by \`${track.requester?.tag}\`.`,
+            ),
+        ],
+      }).catch((err) => console.error("Failed to send player log:", err));
+    }
   }
 }
 /**@codeStyle - https://google.github.io/styleguide/tsguide.html */

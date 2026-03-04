@@ -44,16 +44,14 @@ export default class Seek extends Command {
           return;
         }
         await player.seek(seekTo);
-        {
-          await ctx.reply({
-            embeds: [
-              client
-                .embed()
-                .desc(`${client.emoji.check} Seeked to ${fromMs(seekTo)}.`),
-            ],
-          });
-          return;
-        }
+        await ctx.reply({
+          embeds: [
+            client
+              .embed()
+              .desc(`${client.emoji.check} Seeked to ${fromMs(seekTo)}.`),
+          ],
+        });
+        return;
       }
       const generateEmbed = () => {
         const _player = client.getPlayer(ctx);

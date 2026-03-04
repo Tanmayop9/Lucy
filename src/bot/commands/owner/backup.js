@@ -73,7 +73,7 @@ export default class Backup extends Command {
           files: [new AttachmentBuilder(file, { name: file })],
         })
         .then(() => true)
-        .catch((error) => (console.log(error), false));
+        .catch((error) => (console.error(error), false));
 
       // Final edit
       await waitEmbed.edit({

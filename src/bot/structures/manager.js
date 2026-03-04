@@ -33,8 +33,8 @@ try {
     ],
     defaultSearchEngine: "youtube",
     spotifyConfig: {
-      clientId: "d62dc6e25a374aad8f035111f351ea85",
-      clientSecret: "c807e75e805d4001be9fd81e4afd6272",
+      clientId: "",
+      clientSecret: "",
       searchLimit: 10,
       albumPageLimit: 1,
       searchMarket: "IN",
@@ -46,6 +46,16 @@ try {
       countryCode: "us",
     },
   };
+}
+
+// Allow environment variables to override Spotify credentials from lava.json
+if (process.env.SPOTIFY_CLIENT_ID) {
+  lavaConfig.spotifyConfig = lavaConfig.spotifyConfig || {};
+  lavaConfig.spotifyConfig.clientId = process.env.SPOTIFY_CLIENT_ID;
+}
+if (process.env.SPOTIFY_CLIENT_SECRET) {
+  lavaConfig.spotifyConfig = lavaConfig.spotifyConfig || {};
+  lavaConfig.spotifyConfig.clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 }
 
 /**
@@ -84,6 +94,11 @@ export class Manager {
         client.log("No valid Lavalink nodes configured in lava.json. Music features will be unavailable.", "error");
       } else {
         client.log(`Initializing Lavalink with ${lavalinkNodes.length} node(s): ${lavalinkNodes.map(n => n.name).join(", ")}`, "info");
+      }
+
+      // Warn if Spotify credentials are not configured
+      if (!lavaConfig.spotifyConfig?.clientId || !lavaConfig.spotifyConfig?.clientSecret) {
+        client.log("Spotify credentials are not configured. Spotify playback will be unavailable. Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in your .env file.", "warn");
       }
 
       const manager = new Kazagumo(
