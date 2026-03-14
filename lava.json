@@ -1,20 +1,12 @@
 {
   "nodes": [
     {
-      "name": "primary-node",
-      "host": "lava-v3.ajieblogs.eu.org",
-      "port": 443,
-      "password": "https://dsc.gg/ajidevserver",
-      "secure": true,
-      "priority": 1
-    },
-    {
-      "name": "backup-node",
-      "host": "lavalink.jirayu.net",
-      "port": 13592,
+      "name": "nodelink",
+      "host": "localhost",
+      "port": 2333,
       "password": "youshallnotpass",
       "secure": false,
-      "priority": 2
+      "priority": 1
     }
   ],
   "defaultSearchEngine": "youtube",
