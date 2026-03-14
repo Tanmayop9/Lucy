@@ -101,7 +101,7 @@ export default class PlayerStart {
             .desc(
               `${client.emoji.info} **[${moment().tz("Asia/Kolkata")}]** Started playing \`${track.title.substring(0, 30)}\` ` +
                 `in guild named \`${client.guilds.cache.get(player.guildId)?.name.substring(0, 20)}\` (${player.guildId}). ` +
-                `Track requested by \`${track.requester?.tag}\`.`,
+                `Track requested by \`${track.requester?.username}\`.`,
             ),
         ],
       }).catch((err) => console.error("Failed to send player log:", err));
