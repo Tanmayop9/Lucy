@@ -7,11 +7,10 @@ export default class Profile extends Command {
     this.aliases = ["pr"];
     this.description = "Shows your user profile.";
     this.execute = async (client, ctx) => {
-      const [commandsUsed, songsPlayed, spotifyData, afkData, premiumData] =
+      const [commandsUsed, songsPlayed, afkData, premiumData] =
         await Promise.all([
           client.db.stats.commandsUsed.get(ctx.author.id),
           client.db.stats.songsPlayed.get(ctx.author.id),
-          client.db.spotify.get(ctx.author.id),
           client.db.afk.get(ctx.author.id),
           client.db.botstaff.get(ctx.author.id),
         ]);
@@ -44,13 +43,13 @@ export default class Profile extends Command {
         )
         .thumb(ctx.author.displayAvatarURL({ size: 256 }));
 
-      const spotifyPage = client
+      const musicPage = client
         .embed()
-        .title(`${ctx.author.username} — Spotify`)
+        .title(`${ctx.author.username} — Music`)
         .desc(
-          spotifyData
-            ? `**Connected:** Yes\n**Display Name:** ${spotifyData.display_name ?? "Unknown"}`
-            : "No Spotify account connected.",
+          `**Songs Played:** ${songsPlayed ?? 0}\n` +
+          `**Search Engine:** Set via \`${client.prefix}searchengine\`\n` +
+          `**Note:** Spotify is no longer supported. Use YouTube, SoundCloud, Deezer, or Apple Music.`,
         );
 
       const accountPage = client
@@ -74,7 +73,7 @@ export default class Profile extends Command {
           `**Highest Role:** ${ctx.member?.roles.highest ?? "None"}`,
         );
 
-      await paginator(ctx, [statsPage, spotifyPage, accountPage, memberPage]);
+      await paginator(ctx, [statsPage, musicPage, accountPage, memberPage]);
     };
   }
 }

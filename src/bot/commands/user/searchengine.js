@@ -29,12 +29,18 @@ export default class SearchEngine extends Command {
       // Get current preference
       const userPrefs =
         (await client.db.userPreferences.get(ctx.author.id)) || {};
-      const currentEngine = userPrefs.searchEngine || "youtube";
+      let currentEngine = userPrefs.searchEngine || "youtube";
+
+      // Migrate legacy "spotify" engine preference to "youtube" (Spotify plugin removed)
+      if (currentEngine === "spotify") {
+        currentEngine = "youtube";
+        userPrefs.searchEngine = "youtube";
+        await client.db.userPreferences.set(ctx.author.id, userPrefs);
+      }
 
       const engineNames = {
         youtube: "YouTube",
         youtubemusic: "YouTube Music",
-        spotify: "Spotify",
         soundcloud: "SoundCloud",
         applemusic: "Apple Music",
         deezer: "Deezer",
@@ -56,12 +62,6 @@ export default class SearchEngine extends Command {
             value: "youtubemusic",
             description: "Music-focused YouTube",
             default: currentEngine === "youtubemusic",
-          },
-          {
-            label: "Spotify",
-            value: "spotify",
-            description: "Search from Spotify",
-            default: currentEngine === "spotify",
           },
           {
             label: "SoundCloud",
