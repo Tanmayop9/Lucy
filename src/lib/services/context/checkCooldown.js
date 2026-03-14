@@ -17,7 +17,10 @@ export const isUnderCooldown = async (ctx, command) => {
     return false;
   }
   const expirationTime = timestamps.get(ctx.author.id) + cooldownAmount;
-  if (now > expirationTime) return false;
+  if (now > expirationTime) {
+    timestamps.set(ctx.author.id, now);
+    return false;
+  }
   const cooldownMessageRlBucket = cooldownRateLimitManager.acquire(
     `${ctx.author.id}_${command.name}`,
   );

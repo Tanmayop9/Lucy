@@ -1,6 +1,5 @@
 import axios from "axios";
 import xml2JS from "xml2js";
-import qs from "querystring";
 const xmlParser = new xml2JS.Parser({
   charkey: "C$",
   attrkey: "A$",
@@ -10,7 +9,7 @@ export const getWeather = async (location) => {
   if (!location.length) return;
   const res = await axios
     .get(
-      `http://weather.service.msn.com/find.aspx?src=outlook&weadegreetype=C&culture=en-us&weasearchstr=${qs.escape(location)}`,
+      `http://weather.service.msn.com/find.aspx?src=outlook&weadegreetype=C&culture=en-us&weasearchstr=${encodeURIComponent(location)}`,
     )
     .catch(() => undefined);
   if (!res) return;
