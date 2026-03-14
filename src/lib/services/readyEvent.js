@@ -138,7 +138,7 @@ export const readyEvent = async (client) => {
         ],
     });
 
-    client.log(`Logged in as ${client.user.tag} [${client.user.id}]`, 'success');
+    client.log(`Logged in as ${client.user.username} [${client.user.id}]`, 'success');
 
     // Setup webhooks from database or create them
     const webhookUrls = await setupWebhooks(client);
