@@ -209,10 +209,10 @@ export const readyEvent = async (client) => {
     // Initialize automatic daily backup
     await initAutoBackup(client);
 
-    // 24/7 Player Load - guard against empty nodes (no Lavalink nodes connected yet)
+    // 24/7 Player Load - guard against empty nodes (no NodeLink nodes connected yet)
     const nodesArray = [...client.manager.shoukaku.nodes];
     if (nodesArray.length === 0) {
-        client.log('No Lavalink nodes available yet, waiting for a node to connect...', 'warn');
+        client.log('No NodeLink nodes available yet, waiting for a node to connect...', 'warn');
         client.manager.shoukaku.once('ready', async () => await load247Players(client));
         return;
     }
