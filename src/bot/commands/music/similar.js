@@ -49,7 +49,6 @@ export default class Similar extends Command {
           label: `${index} - ${title.charAt(0).toUpperCase() + title.substring(1, 30)}`,
           value: `${index}`,
           description: `Author: ${author.substring(0, 30)}     Duration: ${track?.isStream ? "LIVE" : client.formatDuration(track.length)}`,
-          emoji: client.emoji.info,
         };
       });
       const menu = new StringSelectMenuBuilder()

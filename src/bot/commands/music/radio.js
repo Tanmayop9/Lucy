@@ -28,7 +28,6 @@ export default class Radio extends Command {
         }));
       const options = Object.entries(rad).map(([label, value], index) => ({
         value,
-        emoji: client.emoji.info,
         label: `${index} -  ${label.charAt(0).toUpperCase() + label.substring(1)}`,
       }));
       const menu = new StringSelectMenuBuilder()

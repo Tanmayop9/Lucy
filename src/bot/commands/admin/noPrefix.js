@@ -55,7 +55,7 @@ export default class NoPrefix extends Command {
               client
                 .embed()
                 .desc(
-                  `${client.emoji.cross} There are no users with no prefix privilages.`,
+                  `${client.emoji.cross} There are no users with no prefix privileges.`,
                 ),
             ],
           });

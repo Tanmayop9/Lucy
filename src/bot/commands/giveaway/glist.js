@@ -1,5 +1,5 @@
 import { Command } from "../../structures/abstract/command.js";
-import { getGuildGiveaways, giveawayStatus, relativeTimestamp } from "../../../lib/utils/giveawayUtil.js";
+import { getGuildGiveaways, giveawayStatus } from "../../../lib/utils/giveawayUtil.js";
 import { paginator } from "../../../lib/utils/paginator.js";
 import _ from "lodash";
 

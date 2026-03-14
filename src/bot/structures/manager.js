@@ -1,7 +1,6 @@
 import apple from "kazagumo-apple";
 import deezer from "kazagumo-deezer";
 import { Connectors } from "shoukaku";
-import spotify from "kazagumo-spotify";
 import { Kazagumo, Plugins } from "kazagumo";
 import { autoplay } from "../../lib/services/autoplay.js";
 import { readFileSync } from "node:fs";
@@ -32,30 +31,12 @@ try {
       },
     ],
     defaultSearchEngine: "youtube",
-    spotifyConfig: {
-      clientId: "",
-      clientSecret: "",
-      searchLimit: 10,
-      albumPageLimit: 1,
-      searchMarket: "IN",
-      playlistPageLimit: 1,
-    },
     appleConfig: {
       imageWidth: 600,
       imageHeight: 900,
       countryCode: "us",
     },
   };
-}
-
-// Allow environment variables to override Spotify credentials from lava.json
-if (process.env.SPOTIFY_CLIENT_ID) {
-  lavaConfig.spotifyConfig = lavaConfig.spotifyConfig || {};
-  lavaConfig.spotifyConfig.clientId = process.env.SPOTIFY_CLIENT_ID;
-}
-if (process.env.SPOTIFY_CLIENT_SECRET) {
-  lavaConfig.spotifyConfig = lavaConfig.spotifyConfig || {};
-  lavaConfig.spotifyConfig.clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 }
 
 /**
@@ -96,17 +77,11 @@ export class Manager {
         client.log(`Initializing NodeLink with ${nodelinkNodes.length} node(s): ${nodelinkNodes.map(n => n.name).join(", ")}`, "info");
       }
 
-      // Warn if Spotify credentials are not configured
-      if (!lavaConfig.spotifyConfig?.clientId || !lavaConfig.spotifyConfig?.clientSecret) {
-        client.log("Spotify credentials are not configured. Spotify playback will be unavailable. Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in your .env file.", "warn");
-      }
-
       const manager = new Kazagumo(
         {
           plugins: [
             new deezer(),
             new apple(lavaConfig.appleConfig),
-            new spotify(lavaConfig.spotifyConfig),
             new Plugins.PlayerMoved(client),
           ],
           defaultSearchEngine: lavaConfig.defaultSearchEngine,

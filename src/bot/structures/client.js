@@ -80,7 +80,6 @@ export class ExtendedClient extends Client {
       config: josh("config"), // Bot configuration (webhooks, etc.)
       prefix: josh("prefix"), // Guild-specific prefixes
       afk: josh("afk"), // AFK status
-      spotify: josh("spotify"), // Spotify user data
       userPreferences: josh("userPreferences"), // User preferences (search engine, etc.)
 
       stats: {

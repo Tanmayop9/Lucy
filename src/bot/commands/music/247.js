@@ -4,7 +4,7 @@
  * @copyright 2024 1sT - Services | CC BY-NC-SA 4.0
  */
 import { Command } from "../../structures/abstract/command.js";
-export default class Autoplay extends Command {
+export default class TwoFourSeven extends Command {
   constructor() {
     super(...arguments);
     this.player = true;

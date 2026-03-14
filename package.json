@@ -37,7 +37,6 @@
     "kazagumo": "^3.0.5",
     "kazagumo-apple": "^2.0.2",
     "kazagumo-deezer": "^2.0.2",
-    "kazagumo-spotify": "^2.1.0",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
     "moment-duration-format": "^2.3.2",

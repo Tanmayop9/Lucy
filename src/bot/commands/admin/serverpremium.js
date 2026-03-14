@@ -36,7 +36,7 @@ export default class PremiumServer extends Command {
     ];
 
     this.execute = async (client, ctx, args) => {
-      const { check, cross, info } = client.emoji;
+      const { cross } = client.emoji;
       const action = args[0]?.toLowerCase();
       const serverId = args[1] || ctx.guild?.id;
       const durationArg = args[2];

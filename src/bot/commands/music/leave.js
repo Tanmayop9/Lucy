@@ -7,11 +7,8 @@ export default class Leave extends Command {
     this.aliases = ["dc", "disconnect"];
     this.description = "Disconnect client from VC";
     this.execute = async (client, ctx) => {
-      try {
-        await ctx.guild.members.me?.voice.disconnect();
-      } catch (err) {
-        console.error("Failed to disconnect from voice channel:", err);
-      }
+      const player = client.getPlayer(ctx);
+      await player.destroy();
       await ctx.reply({
         embeds: [
           client

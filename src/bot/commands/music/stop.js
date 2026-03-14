@@ -6,11 +6,8 @@ export default class Stop extends Command {
     this.inSameVC = true;
     this.description = "Stops playing player";
     this.execute = async (client, ctx) => {
-      try {
-        await ctx.guild.members.me?.voice.disconnect();
-      } catch (err) {
-        console.error("Failed to disconnect from voice channel:", err);
-      }
+      const player = client.getPlayer(ctx);
+      await player.destroy();
       await ctx.reply({
         embeds: [
           client

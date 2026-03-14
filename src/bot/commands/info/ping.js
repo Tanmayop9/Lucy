@@ -19,9 +19,9 @@ export default class Ping extends Command {
     });
 
     const start = performance.now();
-    await client.db.blacklist.set("ping_test", true);
-    await client.db.blacklist.get("ping_test");
-    await client.db.blacklist.delete("ping_test");
+    await client.db.config.set("ping_test", true);
+    await client.db.config.get("ping_test");
+    await client.db.config.delete("ping_test");
     const dbLatency = (performance.now() - start).toFixed(2);
 
     const wsLatency = client.ws.ping.toFixed(2);

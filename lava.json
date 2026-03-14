@@ -10,14 +10,6 @@
     }
   ],
   "defaultSearchEngine": "youtube",
-  "spotifyConfig": {
-    "clientId": "YOUR_SPOTIFY_CLIENT_ID",
-    "clientSecret": "YOUR_SPOTIFY_CLIENT_SECRET",
-    "searchLimit": 10,
-    "albumPageLimit": 1,
-    "searchMarket": "IN",
-    "playlistPageLimit": 1
-  },
   "appleConfig": {
     "imageWidth": 600,
     "imageHeight": 900,

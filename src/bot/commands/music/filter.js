@@ -119,7 +119,6 @@ export default class Filter extends Command {
         label: f.label,
         value: key,
         description: f.description,
-        emoji: client.emoji.info,
       }));
 
       const menu = new StringSelectMenuBuilder()
