@@ -66,10 +66,10 @@ export default class Stats extends Command {
 
     const nodeLines = nodes.length
       ? nodes.map((n) => `**${n.name}** — ${n.state}${n.ping !== null ? ` | Ping: ${n.ping}ms` : ""}`)
-      : ["No Lavalink nodes configured."];
+      : ["No NodeLink nodes configured."];
     const nodePage = client
       .embed()
-      .title("Lavalink Nodes")
+      .title("NodeLink Nodes")
       .desc(nodeLines.join("\n"));
 
     return [memPage, shardPage, cpuPage, nodePage];

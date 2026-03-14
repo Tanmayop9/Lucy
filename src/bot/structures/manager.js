@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Load Lavalink configuration from lava.json
+// Load NodeLink configuration from lava.json
 let lavaConfig;
 try {
   const configPath = resolve(__dirname, "../../../lava.json");
@@ -23,10 +23,10 @@ try {
   lavaConfig = {
     nodes: [
       {
-        name: "primary-node",
-        host: "pnode1.danbot.host",
-        port: 1427,
-        password: "kaalahoon",
+        name: "nodelink",
+        host: "localhost",
+        port: 2333,
+        password: "youshallnotpass",
         secure: false,
         priority: 1,
       },
@@ -59,7 +59,7 @@ if (process.env.SPOTIFY_CLIENT_SECRET) {
 }
 
 /**
- * Validates a lavalink node configuration
+ * Validates a NodeLink node configuration
  * @param {object} node - Node configuration object
  * @returns {boolean} Whether the node config is valid
  */
@@ -77,7 +77,7 @@ const sortedNodes = lavaConfig.nodes.sort(
 );
 
 // Convert nodes to Shoukaku format, filtering out invalid nodes
-const lavalinkNodes = sortedNodes
+const nodelinkNodes = sortedNodes
   .filter((node) => isValidNode(node))
   .map((node) => ({
     name: node.name || `node-${node.host}:${node.port}`,
@@ -90,10 +90,10 @@ export class Manager {
   static {
     this.init = (client) => {
       // Check if there are valid nodes before initializing
-      if (lavalinkNodes.length === 0) {
-        client.log("No valid Lavalink nodes configured in lava.json. Music features will be unavailable.", "error");
+      if (nodelinkNodes.length === 0) {
+        client.log("No valid NodeLink nodes configured in lava.json. Music features will be unavailable.", "error");
       } else {
-        client.log(`Initializing Lavalink with ${lavalinkNodes.length} node(s): ${lavalinkNodes.map(n => n.name).join(", ")}`, "info");
+        client.log(`Initializing NodeLink with ${nodelinkNodes.length} node(s): ${nodelinkNodes.map(n => n.name).join(", ")}`, "info");
       }
 
       // Warn if Spotify credentials are not configured
@@ -114,7 +114,7 @@ export class Manager {
             client.guilds.cache.get(guildId)?.shard.send(payload),
         },
         new Connectors.DiscordJS(client),
-        lavalinkNodes,
+        nodelinkNodes,
         {
           userAgent: `@painfuego/fuego/v1.0.0/21_N-2K021-ST`,
           reconnectTries: 5,
@@ -141,23 +141,23 @@ export class Manager {
         client.emit("playerDestroy", ...args),
       );
 
-      // Enhanced Lavalink node connection handling with fallback
+      // Enhanced NodeLink node connection handling with fallback
       manager.shoukaku.on("error", (name, error) => {
         const errorMsg = typeof error === "object" ? (error.message || JSON.stringify(error)) : String(error);
-        client.log(`Lavalink node ${name} error: ${errorMsg}`, "error");
+        client.log(`NodeLink node ${name} error: ${errorMsg}`, "error");
       });
 
       manager.shoukaku.on("ready", (name) => {
-        client.log(`Lavalink node connected: ${name}`, "success");
+        client.log(`NodeLink node connected: ${name}`, "success");
       });
 
       manager.shoukaku.on("close", (name, code, reason) => {
-        client.log(`Lavalink node ${name} closed with code ${code}: ${reason || "No reason provided"}`, "warn");
+        client.log(`NodeLink node ${name} closed with code ${code}: ${reason || "No reason provided"}`, "warn");
       });
 
       manager.shoukaku.on("disconnect", (name, reason) => {
         const reasonStr = typeof reason === "object" ? JSON.stringify(reason) : String(reason || "Unknown");
-        client.log(`Lavalink node ${name} disconnected: ${reasonStr}`, "warn");
+        client.log(`NodeLink node ${name} disconnected: ${reasonStr}`, "warn");
 
         // Check if there are other available nodes
         const availableNodes = [...manager.shoukaku.nodes.values()].filter(
@@ -166,7 +166,7 @@ export class Manager {
         if (availableNodes.length > 0) {
           client.log(`Switching to backup node: ${availableNodes[0].name}`, "info");
         } else {
-          client.log("All Lavalink nodes are disconnected. Music playback unavailable.", "error");
+          client.log("All NodeLink nodes are disconnected. Music playback unavailable.", "error");
         }
       });
 

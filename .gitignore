@@ -29,3 +29,6 @@ npm-debug.log*
 # Temporary files
 *.tmp
 *.temp
+
+# NodeLink runtime config (auto-generated from lava.json at startup — never commit)
+nodelink/config.js
