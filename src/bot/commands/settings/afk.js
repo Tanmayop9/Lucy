@@ -29,9 +29,7 @@ export default class Afk extends Command {
         client
           .embed()
           .desc(
-            `${client.emoji.check} **AFK Mode Activated**\n\n` +
-              `${client.emoji.info} **Reason:** ${reason}\n` +
-              `${client.emoji.info} I'll notify others when they mention you!`,
+            `AFK mode activated.\n\n**Reason:** ${reason}`,
           ),
       ],
     });

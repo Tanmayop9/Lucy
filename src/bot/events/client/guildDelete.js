@@ -8,15 +8,14 @@ export default class GuildDelete {
       const owner = await client.users
         .fetch(guild.ownerId, { force: true })
         .catch(() => null);
-      await client.db?.twoFourSeven.delete(guild.id);
       await owner
         ?.send({
           embeds: [
             client
               .embed()
               .desc(
-                `${client.emoji.warn} Removed from \`${guild.name}\`\n\n` +
-                  `${client.emoji.info} **[\`Support\`](${client.config.links.support})**`,
+                `${client.user.username} has been removed from **${guild.name}**.\n\n` +
+                  `[Support Server](${client.config.links.support})`,
               ),
           ],
           components: [
@@ -26,25 +25,27 @@ export default class GuildDelete {
                 .link("Support Server", `${client.config.links.support}`),
               client
                 .button()
-                .link("Add me back", `${client.invite.required()}`),
+                .link("Add me back", `${client.botInvite.required()}`),
             ),
           ],
         })
         .catch(() => null);
-      await client.webhooks.serverchuda.send({
-        username: `GuildLeave-logs`,
-        avatarURL: `${client.user?.displayAvatarURL()}`,
-        embeds: [
-          client
-            .embed()
-            .desc(
-              `${client.emoji.warn} **Left ${guild.name}**\n\n` +
-                `${client.emoji.info} Members: ${guild.memberCount}\n` +
-                `${client.emoji.info} ID: ${guild.id}\n` +
-                `${client.emoji.info} Owner: ${owner?.displayName}`,
-            ),
-        ],
-      });
+      if (client.webhooks?.serverchuda) {
+        await client.webhooks.serverchuda.send({
+          username: `GuildLeave-logs`,
+          avatarURL: `${client.user?.displayAvatarURL()}`,
+          embeds: [
+            client
+              .embed()
+              .desc(
+                `Left **${guild.name}**\n\n` +
+                  `Members: ${guild.memberCount}\n` +
+                  `ID: ${guild.id}\n` +
+                  `Owner: ${owner?.displayName}`,
+              ),
+          ],
+        }).catch(() => null);
+      }
     };
   }
 }

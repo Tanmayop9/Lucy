@@ -9,7 +9,7 @@ export const filter = async (interaction, ctx) => {
     embeds: [
       client
         .embed()
-        .desc(`${client.emoji.cross} This is reserved for ${ctx.author}.`),
+        .desc(`This interaction is reserved for ${ctx.author}.`),
     ],
     ephemeral: true,
   });

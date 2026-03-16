@@ -99,30 +99,9 @@ export default class InteractionCreate {
       );
     }
 
-    // Autocomplete
+    // Autocomplete — no handlers registered currently
     if (interaction.isAutocomplete()) {
-      const commandName = interaction.commandName;
-      const query = interaction.options.getString("query");
-
-      if (["play", "search"].includes(commandName) && query) {
-        try {
-          const res = await client.manager.search(query, {
-            engine: "youtube",
-            requester: interaction.user,
-          });
-
-          const songs = res.tracks?.slice(0, 10).map((track) => ({
-            name: track.title,
-            value: track.uri,
-          }));
-
-          if (songs?.length) {
-            await interaction.respond(songs);
-          }
-        } catch {
-          // Optionally log the error
-        }
-      }
+      await interaction.respond([]).catch(() => null);
     }
   };
 }

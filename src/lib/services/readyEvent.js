@@ -1,36 +1,22 @@
 import { Client } from '../../../dokdo/index.js';
 import { loadEvents } from '../../system/loaders/events.js';
 import { loadCommands } from '../../system/loaders/msgCmds.js';
-import { connect247 } from './connect247.js';
 import { deploySlashCommands } from '../../system/loaders/slashCmds.js';
 import { setupWebhooks } from './setupWebhooks.js';
 import { initAutoBackup } from './autoBackup.js';
+import { loadInviteCache } from '../../lib/utils/inviteTracker.js';
 
 const SUPPORT_SERVER = 'https://discord.gg/p6nXDJMeyc';
-
-const load247Players = async (client) => {
-    const guildIds = await client.db.twoFourSeven.keys;
-    let players = 0;
-
-    client.log('Loading 24/7 players...', 'info');
-    for (const guildId of guildIds) {
-        const connected = await connect247(client, guildId);
-        if (connected) players++;
-    }
-
-    client.log(`Loaded ${players} / ${guildIds.length} 24/7 players.`, 'success');
-};
 
 const checkPremiumExpiries = async (client) => {
     const now = Date.now();
     let expiredUsers = 0;
     let expiredServers = 0;
 
-    // User Premium Expiry - check both 'expires' and 'expiresAt' for compatibility
+    // User Premium Expiry
     const userKeys = await client.db.botstaff.keys;
     for (const id of userKeys) {
         const data = await client.db.botstaff.get(id);
-        // Skip if permanent
         if (data?.permanent) continue;
         const expiryTime = data?.expiresAt || data?.expires;
         if (expiryTime && expiryTime < now) {
@@ -43,8 +29,8 @@ const checkPremiumExpiries = async (client) => {
                     embeds: [
                         client.embed('#FF6B6B')
                             .title('Premium Expired')
-                            .desc(`Your **Nerox Premium** has expired.\n\nTo renew, click the button below or join our [Support Server](${SUPPORT_SERVER})`)
-                            .footer({ text: 'Nerox Premium | Expired' })
+                            .desc(`Your premium has expired.\n\nTo renew, join our [Support Server](${SUPPORT_SERVER}).`)
+                            .footer({ text: 'Premium | Expired' })
                     ],
                     components: [
                         {
@@ -61,11 +47,10 @@ const checkPremiumExpiries = async (client) => {
         }
     }
 
-    // Server Premium Expiry - check both 'expires' and 'expiresAt' for compatibility
+    // Server Premium Expiry
     const serverKeys = await client.db.serverstaff.keys;
     for (const id of serverKeys) {
         const data = await client.db.serverstaff.get(id);
-        // Skip if permanent
         if (data?.permanent) continue;
         const expiryTime = data?.expiresAt || data?.expires;
         if (expiryTime && expiryTime < now) {
@@ -83,18 +68,13 @@ const checkNoPrefixExpiries = async (client) => {
     const now = Date.now();
     let expiredUsers = 0;
 
-    // NoPrefix Expiry
     const noPrefixKeys = await client.db.noPrefix.keys;
     for (const id of noPrefixKeys) {
         const data = await client.db.noPrefix.get(id);
 
-        // Skip legacy format (just true) - treat as permanent
         if (data === true) continue;
-
-        // Skip if permanent
         if (data?.permanent) continue;
 
-        // Check expiry
         const expiryTime = data?.expiresAt || data?.expires;
         if (expiryTime && expiryTime < now) {
             await client.db.noPrefix.delete(id).catch(() => {});
@@ -106,8 +86,8 @@ const checkNoPrefixExpiries = async (client) => {
                     embeds: [
                         client.embed('#FF6B6B')
                             .title('No Prefix Expired')
-                            .desc(`Your **No Prefix** access has expired.\n\nYou will now need to use the prefix \`${client.prefix}\` before commands.\n\nTo renew, join our [Support Server](${SUPPORT_SERVER})`)
-                            .footer({ text: 'Nerox No Prefix | Expired' })
+                            .desc(`Your no-prefix access has expired. You will need to use the prefix \`${client.prefix}\` before commands.\n\nJoin our [Support Server](${SUPPORT_SERVER}) to renew.`)
+                            .footer({ text: 'No Prefix | Expired' })
                     ],
                     components: [
                         {
@@ -209,15 +189,8 @@ export const readyEvent = async (client) => {
     // Initialize automatic daily backup
     await initAutoBackup(client);
 
-    // 24/7 Player Load - guard against empty nodes (no NodeLink nodes connected yet)
-    const nodesArray = [...client.manager.shoukaku.nodes];
-    if (nodesArray.length === 0) {
-        client.log('No NodeLink nodes available yet, waiting for a node to connect...', 'warn');
-        client.manager.shoukaku.once('ready', async () => await load247Players(client));
-        return;
-    }
-    const node = nodesArray[0][1];
-    if (node.state === 2) return await load247Players(client);
-    client.manager.shoukaku.once('ready', async () => await load247Players(client));
+    // Load invite cache for all guilds
+    await loadInviteCache(client);
+    client.log('Invite cache loaded.', 'info');
 };
 /**@codeStyle - https://google.github.io/styleguide/tsguide.html */
