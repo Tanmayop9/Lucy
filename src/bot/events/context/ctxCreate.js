@@ -2,8 +2,6 @@ import { execute } from "../../../lib/services/context/execute.js";
 import { resolveNsfw } from "../../../lib/services/context/resolveNsfw.js";
 import { resolvePerms } from "../../../lib/services/context/resolvePerms.js";
 import { enforceAdmin } from "../../../lib/services/context/enforceAdmin.js";
-import { resolveVoice } from "../../../lib/services/context/resolveVoice.js";
-import { resolvePlayer } from "../../../lib/services/context/resolvePlayer.js";
 import { isUnderCooldown } from "../../../lib/services/context/checkCooldown.js";
 import { resolvePrefix } from "../../../lib/services/context/resolvePrefix.js";
 import { resolveCommand } from "../../../lib/services/context/resolveCommand.js";
@@ -101,8 +99,6 @@ export default class ContextCreate {
 
       if (args[0]?.toLowerCase() === "-guide")
         return void client.emit("infoRequested", ctx, command);
-      if (!(await resolveVoice(ctx, command))) return;
-      if (!(await resolvePlayer(ctx, command))) return;
       if (!(await resolveNsfw(ctx, command))) return;
 
       await execute(ctx, command, args);

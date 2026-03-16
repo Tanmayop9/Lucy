@@ -1,9 +1,6 @@
-import moment from "moment";
 import { readdirSync } from "fs";
-import { Manager } from "./manager.js";
 import { fileURLToPath } from "node:url";
 import { emoji } from "../../assets/emoji.js";
-import format from "moment-duration-format";
 import { josh } from "../../lib/services/josh.js";
 import { log } from "../../logger.js";
 import { dirname, resolve } from "node:path";
@@ -19,9 +16,8 @@ import {
   GatewayIntentBits,
 } from "discord.js";
 import { ClusterClient, getInfo } from "discord-hybrid-sharding";
-import { config } from "./config.js"; // 🔥 Now loads config directly
+import { config } from "./config.js";
 
-format(moment);
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export class ExtendedClient extends Client {
@@ -43,7 +39,6 @@ export class ExtendedClient extends Client {
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.DirectMessages,
-        GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildMessageReactions,
       ],
       failIfNotExists: false,
@@ -57,13 +52,15 @@ export class ExtendedClient extends Client {
 
     this.emoji = emoji;
     this.config = config;
-    this.webhooks = {}; // Will be initialized in ready event
+    this.webhooks = {};
     this.log = (message, type) => void log(message, type);
-    this.manager = Manager.init(this);
     this.underMaintenance = false;
     this.prefix = config.prefix || "&";
     this.owners = config.owners;
     this.admins = config.admins;
+
+    // Invite cache: Map<guildId, Map<inviteCode, uses>>
+    this.inviteCache = new Map();
 
     this.db = {
       noPrefix: josh("noPrefix"),
@@ -71,31 +68,29 @@ export class ExtendedClient extends Client {
       botmods: josh("botmods"),
       giveaway: josh("giveaway"),
       msgCount: josh("msgCount"),
-      botstaff: josh("botstaff"), // Bot premium users
+      botstaff: josh("botstaff"),
       redeemCode: josh("redeemCode"),
-      serverstaff: josh("serverstaff"), // Server premium
+      serverstaff: josh("serverstaff"),
       ignore: josh("ignore"),
       bypass: josh("bypass"),
       blacklist: josh("blacklist"),
-      config: josh("config"), // Bot configuration (webhooks, etc.)
-      prefix: josh("prefix"), // Guild-specific prefixes
-      afk: josh("afk"), // AFK status
-      spotify: josh("spotify"), // Spotify user data
-      userPreferences: josh("userPreferences"), // User preferences (search engine, etc.)
+      config: josh("config"),
+      prefix: josh("prefix"),
+      afk: josh("afk"),
+      invites: josh("invites"),
+      welcomeConfig: josh("welcomeConfig"),
+      userPreferences: josh("userPreferences"),
 
       stats: {
-        songsPlayed: josh("stats/songsPlayed"),
         commandsUsed: josh("stats/commandsUsed"),
-        friends: josh("stats/friends"), // Friends list
       },
-      twoFourSeven: josh("twoFourSeven"),
     };
 
     this.giveaways = createGiveawayManager(this);
 
     this.dokdo = null;
 
-    this.invite = {
+    this.botInvite = {
       admin: () =>
         this.generateInvite({
           scopes: [OAuth2Scopes.Bot],
@@ -111,9 +106,6 @@ export class ExtendedClient extends Client {
             "AttachFiles",
             "ReadMessageHistory",
             "AddReactions",
-            "Connect",
-            "Speak",
-            "UseVAD",
           ],
         }),
     };
@@ -137,17 +129,6 @@ export class ExtendedClient extends Client {
         ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"][power]
       }`;
     };
-
-    this.formatDuration = (duration) =>
-      moment
-        .duration(duration, "milliseconds")
-        .format("d[d] h[h] m[m] s[s]", 0, {
-          trim: "all",
-        });
-
-    this.getPlayer = (ctx) => this.manager.players.get(ctx.guild.id);
-
-    // Webhooks are initialized in ready event after setupWebhooks
 
     this.on("debug", (data) => this.log(data));
     this.on("ready", async () => await readyEvent(this));

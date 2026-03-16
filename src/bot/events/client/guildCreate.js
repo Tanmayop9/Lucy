@@ -16,8 +16,8 @@ export default class GuildCreate {
           client
             .embed()
             .desc(
-              `${client.emoji.check} Successfully added to \`${guild.name}\`\n\n` +
-                `${client.emoji.info} **[\`Support\`](${client.config.links.support})**`,
+              `${client.user.username} has been added to **${guild.name}**.\n\n` +
+                `[Support Server](${client.config.links.support})`,
             ),
         ],
         components: [
@@ -30,21 +30,23 @@ export default class GuildCreate {
       };
       await owner?.send(obj).catch(() => null);
       if (adder?.id !== owner?.id) await adder?.send(obj).catch(() => null);
-      await client.webhooks.serveradd.send({
-        username: `GuildCreate-logs`,
-        avatarURL: `${client.user?.displayAvatarURL()}`,
-        embeds: [
-          client
-            .embed()
-            .desc(
-              `${client.emoji.check} **Joined ${guild.name}**\n\n` +
-                `${client.emoji.info} Members: ${guild.memberCount}\n` +
-                `${client.emoji.info} ID: ${guild.id}\n` +
-                `${client.emoji.info} Owner: ${owner?.user.displayName}\n` +
-                `${client.emoji.info} Adder: ${adder?.username}`,
-            ),
-        ],
-      });
+      if (client.webhooks?.serveradd) {
+        await client.webhooks.serveradd.send({
+          username: `GuildCreate-logs`,
+          avatarURL: `${client.user?.displayAvatarURL()}`,
+          embeds: [
+            client
+              .embed()
+              .desc(
+                `Joined **${guild.name}**\n\n` +
+                  `Members: ${guild.memberCount}\n` +
+                  `ID: ${guild.id}\n` +
+                  `Owner: ${owner?.user.displayName}\n` +
+                  `Adder: ${adder?.username}`,
+              ),
+          ],
+        }).catch(() => null);
+      }
     };
   }
 }

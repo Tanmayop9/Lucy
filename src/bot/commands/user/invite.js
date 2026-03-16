@@ -1,11 +1,11 @@
 import { ActionRowBuilder } from "discord.js";
 import { Command } from "../../structures/abstract/command.js";
 
-export default class Invite extends Command {
+export default class BotInvite extends Command {
   constructor() {
     super(...arguments);
-    this.aliases = ["inv"];
-    this.description = "Bot invite link";
+    this.aliases = ["addbot", "botinvite"];
+    this.description = "Get the bot invite link.";
     this.execute = async (client, ctx) => {
       await ctx.reply({
         embeds: [
@@ -17,20 +17,19 @@ export default class Invite extends Command {
             })
             .setThumbnail(client.user.displayAvatarURL())
             .desc(
-              `\`\`\`\n` +
-                `Add me to your server\n` +
-                `\`\`\`\n` +
-                `**Basic** • Music permissions\n` +
-                `**Admin** • All features`,
+              `Add **${client.user.username}** to your server.\n\n` +
+                `**Basic** — Required permissions\n` +
+                `**Admin** — All features`,
             ),
         ],
         components: [
           new ActionRowBuilder().addComponents([
-            client.button().link("Basic", client.invite.required()),
-            client.button().link("Admin", client.invite.admin()),
+            client.button().link("Basic", client.botInvite.required()),
+            client.button().link("Admin", client.botInvite.admin()),
           ]),
         ],
       });
     };
   }
 }
+/**@codeStyle - https://google.github.io/styleguide/tsguide.html */

@@ -30,8 +30,7 @@ export default class MessageCreate {
               client
                 .embed()
                 .desc(
-                  `${client.emoji.check} **Welcome back, ${message.author.username}!**\n\n` +
-                    `${client.emoji.info} You were AFK for **${timeString}**`,
+                  `Welcome back, **${message.author.username}**. You were AFK for **${timeString}**.`,
                 ),
             ],
           })
@@ -59,14 +58,14 @@ export default class MessageCreate {
                   client
                     .embed()
                     .desc(
-                      `${client.emoji.info} **${user.username}** is currently AFK\n\n` +
-                        `${client.emoji.info1} **Reason:** ${mentionedAfk.reason}\n` +
-                        `${client.emoji.info1} **Duration:** ${timeString}`,
+                      `**${user.username}** is currently AFK.\n` +
+                        `**Reason:** ${mentionedAfk.reason}\n` +
+                        `**Duration:** ${timeString}`,
                     ),
                 ],
               })
               .catch(() => {});
-            break; // Only show one AFK notification per message
+            break;
           }
         }
       }
